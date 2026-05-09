@@ -6,6 +6,7 @@
   --bg-card: #111827;
   --bg-deep: #020617;
   --glow-blue: #3B82F6;
+  --glow-blue-strong: #2563EB;
   --glow-cyan: #06B6D4;
   --glow-blue-light: #60A5FA;
   --glow-purple: #8B5CF6;
@@ -14,9 +15,12 @@
   --alert-red: #EF4444;
   --alert-orange: #F97316;
   --alert-yellow: #F59E0B;
+  --ok-green: #22C55E;
+  --bb-idle: #374151;
   --text-primary: #FFFFFF;
   --text-secondary: #CBD5E1;
   --text-muted: #94A3B8;
+  --text-dim: #64748B;
   --background: var(--bg-base);
   --foreground: var(--text-primary);
 }
@@ -88,12 +92,36 @@ input {
   border: 1px solid rgba(59, 130, 246, 0.12);
   border-radius: 12px;
   background: var(--bg-card);
-  transition: border-color 160ms ease, box-shadow 160ms ease;
+  transition: border-color 200ms ease, box-shadow 200ms ease, transform 200ms ease;
 }
 
 .bb-card:hover {
   border-color: rgba(59, 130, 246, 0.3);
   box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+}
+
+@keyframes bb-agent-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.28);
+    opacity: 1;
+  }
+}
+
+@keyframes bb-live-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: 0.3;
+  }
 }
 
 @keyframes blackbooks-pulse {

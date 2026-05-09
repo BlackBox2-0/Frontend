@@ -1,0 +1,1891 @@
+[browser] Uncaught Error: Hydration failed because the server rendered HTML didn't match the client. As a result this tree will be regenerated on the client. This can happen if a SSR-ed Client Component used:
+
+- A server/client branch `if (typeof window !== 'undefined')`.
+- Variable input such as `Date.now()` or `Math.random()` which changes each time it's called.
+- Date formatting in a user's locale which doesn't match the server.
+- External changing data without sending a snapshot of it along with the HTML.
+- Invalid HTML tag nesting.
+
+It can also happen if the client has a browser extension installed which messes with the HTML before React loaded.
+
+https://react.dev/link/hydration-mismatch
+
+  ...
+    <AppDevOverlayErrorBoundary globalError={[...]}>
+      <ReplaySsrOnlyErrors>
+      <DevRootHTTPAccessFallbackBoundary>
+        <HTTPAccessFallbackBoundary notFound={<NotAllowedRootHTTPFallbackError>}>
+          <HTTPAccessFallbackErrorBoundary pathname="/" notFound={<NotAllowedRootHTTPFallbackError>} ...>
+            <RedirectBoundary>
+              <RedirectErrorBoundary router={{...}}>
+                <Head>
+                <__next_root_layout_boundary__>
+                  <SegmentViewNode type="layout" pagePath="layout.tsx">
+                    <SegmentTrieNode>
+                    <link>
+                    <script>
+                    <script>
+                    <script>
+                    <RootLayout>
+                      <html lang="en" className="orbitron_f...">
+                        <body className="min-h-full">
+                          <MainLayout>
+                            <div className="min-h-scre...">
+                              <AnimatePresence>
+                              <CyberBackground>
++                               <canvas
++                                 ref={{current:null}}
++                                 aria-hidden="true"
++                                 className="pointer-events-none fixed left-0 top-0 z-0 h-screen w-screen"
++                               >
+-                               <div
+-                                 className="blackbooks-loader-bg fixed inset-0 z-[9999] flex items-center justify-cen..."
+-                                 style={{opacity:"1",transform:"none"}}
+-                               >
+                              ...
+                ...
+
+    at <unknown> (https://react.dev/link/hydration-mismatch)
+    at throwOnHydrationMismatch (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:3318:56)
+    at beginWork (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:6758:918)
+    at runWithFiberInDEV (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:965:74)
+    at performUnitOfWork (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9555:97)
+    at workLoopConcurrentByScheduler (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9551:58)
+    at renderRootConcurrent (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9534:71)
+    at performWorkOnRoot (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:9061:150)
+    at performWorkOnRootViaSchedulerTask (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_react-dom_058-ah~._.js:10255:9)
+    at MessagePort.performWorkUntilDeadline (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/node_modules_next_dist_compiled_0rpq4pf._.js:2647:64)
+    at canvas (<anonymous>)
+    at CyberBackground (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/_0y1gjib._.js:135:214)
+    at MainLayout (file://D:/Hackathon de Dev3pack/Frontend/.next/dev/static/chunks/_0y1gjib._.js:514:223)
+    at RootLayout (app\layout.tsx:39:9)
+  37 |     >
+  38 |       <body className="min-h-full">
+> 39 |         <MainLayout>{children}</MainLayout>
+     |         ^
+  40 |       </body>
+  41 |     </html>
+  42 |   );
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+[31m[1m>[0m [90m1 |[0m [36mimport[0m [33mDashboard[0m [36mfrom[0m [32m"./components/dashboard/Dashboard"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m2 |[0m
+  [90m3 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mPage[0m() {
+  [90m4 |[0m   [36mreturn[0m <[33mDashboard[0m />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] Uncaught Error: ./app/page.tsx:1:1
+Module not found: Can't resolve './components/dashboard/Dashboard'
+> 1 | import Dashboard from "./components/dashboard/Dashboard";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  2 |
+  3 | export default function Page() {
+  4 |   return <Dashboard />;
+
+
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/page.tsx:1:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./app/page.tsx:1:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:5:1
+Module not found: Can't resolve './DashboardHeader'
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:5:1
+Module not found: Can't resolve './DashboardHeader'
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:5:1
+Module not found: Can't resolve './DashboardHeader'
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:5:1
+Module not found: Can't resolve './DashboardHeader'
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:5:1
+Module not found: Can't resolve './DashboardHeader'
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+[31m[1m>[0m [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] Uncaught Error: ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  1 | "use client";
+  2 |
+> 3 | import ActivityFeed from "./ActivityFeed";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import BottomStats from "./BottomStats";
+  5 | import DashboardHeader from "./DashboardHeader";
+  6 | import KPICards from "./KPICards";
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/dashboard/Dashboard.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./app/components/dashboard/Dashboard.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:6:1
+Module not found: Can't resolve './KPICards'
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+[31m[1m>[0m [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m8 |[0m
+  [90m9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] Uncaught Error: ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  1 | "use client";
+  2 |
+> 3 | import ActivityFeed from "./ActivityFeed";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import BottomStats from "./BottomStats";
+  5 | import DashboardHeader from "./DashboardHeader";
+  6 | import KPICards from "./KPICards";
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/dashboard/Dashboard.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./app/components/dashboard/Dashboard.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:7:1
+Module not found: Can't resolve './ThreatScoreRing'
+  [90m 5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m 6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+[31m[1m>[0m [90m 7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+  [90m   |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m 8 |[0m
+  [90m 9 |[0m [36mexport[0m [36mdefault[0m [36mfunction[0m [33mDashboard[0m() {
+  [90m10 |[0m   [36mreturn[0m (
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] Uncaught Error: ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  1 | "use client";
+  2 |
+> 3 | import ActivityFeed from "./ActivityFeed";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import BottomStats from "./BottomStats";
+  5 | import DashboardHeader from "./DashboardHeader";
+  6 | import KPICards from "./KPICards";
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/dashboard/Dashboard.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./app/components/dashboard/Dashboard.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  [90m1 |[0m [32m"use client"[0m;
+  [90m2 |[0m
+[31m[1m>[0m [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+
+./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] Uncaught Error: ./app/components/dashboard/Dashboard.tsx:3:1
+Module not found: Can't resolve './ActivityFeed'
+  1 | "use client";
+  2 |
+> 3 | import ActivityFeed from "./ActivityFeed";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  4 | import BottomStats from "./BottomStats";
+  5 | import DashboardHeader from "./DashboardHeader";
+  6 | import KPICards from "./KPICards";
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/dashboard/Dashboard.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./app/components/dashboard/Dashboard.tsx:3:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+⨯ ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  [90m2 |[0m
+  [90m3 |[0m [36mimport[0m [33mActivityFeed[0m [36mfrom[0m [32m"./ActivityFeed"[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m [33mBottomStats[0m [36mfrom[0m [32m"./BottomStats"[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mDashboardHeader[0m [36mfrom[0m [32m"./DashboardHeader"[0m;
+  [90m6 |[0m [36mimport[0m [33mKPICards[0m [36mfrom[0m [32m"./KPICards"[0m;
+  [90m7 |[0m [36mimport[0m [33mThreatScoreRing[0m [36mfrom[0m [32m"./ThreatScoreRing"[0m;
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+[browser] Uncaught Error: ./app/components/dashboard/Dashboard.tsx:4:1
+Module not found: Can't resolve './BottomStats'
+  2 |
+  3 | import ActivityFeed from "./ActivityFeed";
+> 4 | import BottomStats from "./BottomStats";
+    | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  5 | import DashboardHeader from "./DashboardHeader";
+  6 | import KPICards from "./KPICards";
+  7 | import ThreatScoreRing from "./ThreatScoreRing";
+
+
+
+Import trace:
+  Server Component:
+    ./app/components/dashboard/Dashboard.tsx
+    ./app/page.tsx
+
+https://nextjs.org/docs/messages/module-not-found
+
+
+    at <unknown> (Error: ./app/components/dashboard/Dashboard.tsx:4:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)
+    at <unknown> (Error: (./app/components/dashboard/Dashboard.tsx:4:1)
+    at <unknown> (https://nextjs.org/docs/messages/module-not-found)

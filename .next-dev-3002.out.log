@@ -1,0 +1,9 @@
+
+> blackbox-frontend@0.1.0 dev
+> next dev -p 3002
+
+▲ Next.js 16.2.6 (Turbopack)
+- Local:         http://localhost:3002
+- Network:       http://172.19.112.1:3002
+✓ Ready in 855ms
+[?25h
