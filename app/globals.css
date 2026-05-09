@@ -1,26 +1,110 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg-base: #070B14;
+  --bg-surface: #0F172A;
+  --bg-card: #111827;
+  --bg-deep: #020617;
+  --glow-blue: #3B82F6;
+  --glow-cyan: #06B6D4;
+  --glow-blue-light: #60A5FA;
+  --glow-purple: #8B5CF6;
+  --glow-purple-dark: #7C3AED;
+  --glow-violet: #A855F7;
+  --alert-red: #EF4444;
+  --alert-orange: #F97316;
+  --alert-yellow: #F59E0B;
+  --text-primary: #FFFFFF;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --background: var(--bg-base);
+  --foreground: var(--text-primary);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-syne);
+  --font-body: var(--font-syne);
+  --font-heading: var(--font-orbitron);
+  --font-mono: var(--font-jetbrains-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  background: var(--bg-base);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-syne), Arial, Helvetica, sans-serif;
+}
+
+button,
+input {
+  font: inherit;
+}
+
+.blackbooks-main {
+  background-color: var(--bg-base);
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+  background-size: 34px 34px;
+}
+
+.blackbooks-main::before,
+.blackbooks-main::after {
+  content: "";
+  position: fixed;
+  z-index: 0;
+  pointer-events: none;
+  filter: blur(2px);
+  animation: blackbooks-pulse 8s ease-in-out infinite;
+}
+
+.blackbooks-main::before {
+  left: 240px;
+  top: 64px;
+  width: 520px;
+  height: 520px;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.06), transparent 64%);
+}
+
+.blackbooks-main::after {
+  right: -80px;
+  bottom: -120px;
+  width: 620px;
+  height: 620px;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.05), transparent 66%);
+  animation-delay: -4s;
+}
+
+.bb-card {
+  border: 1px solid rgba(59, 130, 246, 0.12);
+  border-radius: 12px;
+  background: var(--bg-card);
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.bb-card:hover {
+  border-color: rgba(59, 130, 246, 0.3);
+  box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+}
+
+@keyframes blackbooks-pulse {
+  0%,
+  100% {
+    opacity: 0.58;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.08);
+  }
 }
