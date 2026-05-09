@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle, Cpu, ShieldAlert, TrendingUp } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
+import { useEffect, useState } from "react";
+import { Area, AreaChart, ResponsiveContainer } from "recharts";
 
 type KPI = {
   label: string;
@@ -15,6 +17,7 @@ type KPI = {
   subLabel?: string;
   agents?: boolean;
   progress?: boolean;
+  sparkline: number[];
 };
 
 const cards: KPI[] = [
@@ -24,6 +27,7 @@ const cards: KPI[] = [
     icon: ShieldAlert,
     tone: "var(--alert-red)",
     pill: "+3 since yesterday",
+    sparkline: [8, 12, 9, 15, 11, 18, 14, 20, 16, 24],
   },
   {
     label: "TRUST SCORE",
@@ -33,6 +37,7 @@ const cards: KPI[] = [
     tone: "var(--glow-cyan)",
     valueClass: "text-[var(--glow-cyan)]",
     pill: "↑ 2.1 pts this week",
+    sparkline: [82, 83, 85, 84, 86, 85, 87, 86, 88, 87.4],
   },
   {
     label: "RISK INDEX",
@@ -42,6 +47,7 @@ const cards: KPI[] = [
     valueClass: "text-[var(--alert-orange)]",
     pill: "MODERATE RISK",
     subLabel: "threshold: 60",
+    sparkline: [55, 50, 48, 52, 45, 44, 46, 43, 42, 42],
   },
   {
     label: "AI AGENTS",
@@ -50,6 +56,7 @@ const cards: KPI[] = [
     tone: "var(--glow-purple)",
     pill: "5 running · 2 idle",
     agents: true,
+    sparkline: [4, 5, 4, 6, 5, 7, 6, 7, 7, 7],
   },
   {
     label: "INCIDENTS TODAY",
@@ -58,6 +65,7 @@ const cards: KPI[] = [
     tone: "var(--alert-yellow)",
     pill: "",
     progress: true,
+    sparkline: [3, 5, 4, 7, 6, 8, 9, 10, 11, 12],
   },
 ];
 
@@ -88,7 +96,7 @@ function KPICard({ card }: { card: KPI }) {
         visible: { opacity: 1, y: 0 },
       }}
       transition={{ duration: 0.38, ease: "easeOut" }}
-      className="bb-card group relative overflow-hidden px-6 py-5 hover:-translate-y-0.5"
+      className="bb-card group relative flex min-h-[226px] flex-col overflow-hidden px-6 py-5 hover:-translate-y-0.5"
     >
       <div
         aria-hidden="true"
@@ -96,7 +104,7 @@ function KPICard({ card }: { card: KPI }) {
         style={{ background: `color-mix(in srgb, ${card.tone} 8%, transparent)` }}
       />
 
-      <div className="relative z-10">
+      <div className="relative z-10 flex flex-1 flex-col">
         <Icon aria-hidden className="mb-4 size-[18px]" style={{ color: card.tone }} />
         <p className="font-body text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)]">
           {card.label}
@@ -132,8 +140,41 @@ function KPICard({ card }: { card: KPI }) {
         {card.subLabel ? (
           <p className="mt-2 font-mono text-[10px] text-[var(--text-muted)]">{card.subLabel}</p>
         ) : null}
+        <Sparkline data={card.sparkline} color={card.tone} />
       </div>
     </motion.article>
+  );
+}
+
+function Sparkline({ data, color }: { data: number[]; color: string }) {
+  const [mounted, setMounted] = useState(false);
+  const chartData = data.map((value, index) => ({ index, value }));
+
+  useEffect(() => {
+    const timer = window.setTimeout(() => setMounted(true), 0);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="mt-auto h-10 w-full pt-3">
+      {mounted ? (
+        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={1}>
+          <AreaChart data={chartData} margin={{ top: 2, right: 0, bottom: 0, left: 0 }}>
+            <Area
+              type="monotone"
+              dataKey="value"
+              stroke={color}
+              strokeWidth={1.5}
+              fill={color}
+              fillOpacity={0.06}
+              dot={false}
+              activeDot={false}
+              isAnimationActive
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      ) : null}
+    </div>
   );
 }
 

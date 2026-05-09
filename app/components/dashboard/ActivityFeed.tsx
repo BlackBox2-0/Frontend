@@ -114,7 +114,7 @@ export default function ActivityFeed() {
         variants={{
           visible: { transition: { staggerChildren: 0.06 } },
         }}
-        className="mt-4 max-h-[220px] space-y-1 overflow-y-auto pr-1"
+        className="bb-scrollbar mt-4 max-h-[280px] space-y-1 overflow-y-auto pr-1"
       >
         {items.map((item) => (
           <FeedRow key={`${item.severity}-${item.time}`} item={item} />
