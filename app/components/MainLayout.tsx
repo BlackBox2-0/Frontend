@@ -21,8 +21,8 @@ const navItems = [
   { label: "Threat Monitor", icon: ShieldAlert, href: "/threat-monitor" },
   { label: "AI Agents", icon: Cpu, href: "/ai-agents" },
   { label: "Behavioral Intel", icon: Brain, href: "/behavioral-intel" },
-  { label: "Blockchain", icon: Link2, href: "#" },
-  { label: "Reports", icon: FileChartColumn, href: "#" },
+  { label: "Blockchain", icon: Link2, href: "/blockchain" },
+  { label: "Reports", icon: FileChartColumn, href: "/reports" },
 ];
 
 type MainLayoutProps = {
