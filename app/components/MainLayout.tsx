@@ -2,6 +2,8 @@
 
 import type { ReactNode } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 import {
   Bell,
   Brain,
@@ -15,12 +17,12 @@ import {
 } from "lucide-react";
 
 const navItems = [
-  { label: "Dashboard", icon: Grid3X3, active: true },
-  { label: "Threat Monitor", icon: ShieldAlert },
-  { label: "AI Agents", icon: Cpu },
-  { label: "Behavioral Intel", icon: Brain },
-  { label: "Blockchain", icon: Link2 },
-  { label: "Reports", icon: FileChartColumn },
+  { label: "Dashboard", icon: Grid3X3, href: "/" },
+  { label: "Threat Monitor", icon: ShieldAlert, href: "/threat-monitor" },
+  { label: "AI Agents", icon: Cpu, href: "#" },
+  { label: "Behavioral Intel", icon: Brain, href: "#" },
+  { label: "Blockchain", icon: Link2, href: "#" },
+  { label: "Reports", icon: FileChartColumn, href: "#" },
 ];
 
 type MainLayoutProps = {
@@ -28,6 +30,9 @@ type MainLayoutProps = {
 };
 
 export default function MainLayout({ children }: MainLayoutProps) {
+  const pathname = usePathname();
+  const currentPage = navItems.find((item) => item.href === pathname)?.label ?? "Dashboard";
+
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
       <aside className="fixed inset-y-0 left-0 z-30 flex w-[240px] flex-col border-r border-[rgba(59,130,246,0.15)] bg-[var(--bg-surface)]">
@@ -50,33 +55,37 @@ export default function MainLayout({ children }: MainLayoutProps) {
         <nav className="mt-7 flex flex-1 flex-col gap-1 px-3 font-body">
           {navItems.map((item, index) => {
             const Icon = item.icon;
+            const active = item.href === pathname;
 
             return (
-              <motion.a
+              <motion.div
                 key={item.label}
-                href="#"
                 initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.05, duration: 0.28, ease: "easeOut" }}
+              >
+                <Link
+                  href={item.href}
                 className={[
                   "group flex h-11 items-center gap-3 rounded-r-lg border-l-2 px-3 text-sm transition-colors",
-                  item.active
+                  active
                     ? "border-[var(--glow-blue)] bg-[rgba(59,130,246,0.1)] text-white"
                     : "border-transparent text-[var(--text-muted)] hover:bg-white/[0.03] hover:text-[var(--text-secondary)]",
                 ].join(" ")}
-                aria-current={item.active ? "page" : undefined}
+                  aria-current={active ? "page" : undefined}
               >
                 <Icon
                   aria-hidden="true"
                   className={[
                     "size-4 transition",
-                    item.active
+                    active
                       ? "text-[var(--glow-blue-light)] drop-shadow-[0_0_7px_rgba(59,130,246,0.95)]"
                       : "text-current group-hover:text-[var(--glow-cyan)]",
                   ].join(" ")}
                 />
                 <span>{item.label}</span>
-              </motion.a>
+                </Link>
+              </motion.div>
             );
           })}
         </nav>
@@ -100,7 +109,7 @@ export default function MainLayout({ children }: MainLayoutProps) {
           <div className="font-body text-sm text-[var(--text-muted)]">
             <span className="text-[var(--text-secondary)]">BlackBooks</span>
             <span className="px-2 text-[rgba(148,163,184,0.5)]">/</span>
-            <span className="text-white">Dashboard</span>
+            <span className="text-white">{currentPage}</span>
           </div>
 
           <div className="absolute left-1/2 hidden -translate-x-1/2 items-center gap-2 rounded-full border border-emerald-400/20 bg-emerald-400/5 px-3 py-1.5 font-mono text-[11px] tracking-[0.14em] text-emerald-300 shadow-[0_0_16px_rgba(52,211,153,0.08)] md:flex">
