@@ -19,8 +19,8 @@ import {
 const navItems = [
   { label: "Dashboard", icon: Grid3X3, href: "/" },
   { label: "Threat Monitor", icon: ShieldAlert, href: "/threat-monitor" },
-  { label: "AI Agents", icon: Cpu, href: "#" },
-  { label: "Behavioral Intel", icon: Brain, href: "#" },
+  { label: "AI Agents", icon: Cpu, href: "/ai-agents" },
+  { label: "Behavioral Intel", icon: Brain, href: "/behavioral-intel" },
   { label: "Blockchain", icon: Link2, href: "#" },
   { label: "Reports", icon: FileChartColumn, href: "#" },
 ];
