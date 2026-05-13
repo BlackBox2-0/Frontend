@@ -129,7 +129,7 @@ export default function BlockchainLedger() {
         <MetricCard icon={ShieldCheck} label="CHAIN INTEGRITY" value="99.98%" sub="All proofs verified" color="#22C55E" />
         <MetricCard icon={FileKey2} label="EVENT PROOFS" value="1,247" sub="+82 today" color="#06B6D4" />
         <MetricCard icon={TriangleAlert} label="RISK ANCHORED" value={String(integrityScore)} sub="Avg severity score" color="#F97316" />
-        <MetricCard icon={DatabaseZap} label="FINALITY LATENCY" value="420ms" sub="Local validator" color="#8B5CF6" />
+        <MetricCard icon={DatabaseZap} label="FINALITY LATENCY" value="420ms" sub="Local validator" color="#7B2FFF" />
       </section>
 
       <section className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[58fr_42fr]">

@@ -3,14 +3,15 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 
-const REPULSION_STRENGTH = 12000;
-const REPULSION_DISTANCE = 250;
-const SPRING_STRENGTH = 0.006;
-const IDEAL_LENGTH = 180;
-const DAMPING = 0.92;
-const GRAVITY = 0.0004;
+const REPULSION = 4000;
+const IDEAL_LENGTH = 150;
+const SPRING_K = 0.004;
+const DAMPING = 0.88;
+const GRAVITY = 0.001;
+const DRIFT_AMP = 0.06;
+const MAX_SPEED = 2;
 const CANVAS_HEIGHT = 480;
-const BOUNDS_PADDING = 80;
+const BOUNDS_PADDING = 100;
 
 const agents = [
   { id: "Agent-01", role: "Threat Hunter", status: "investigating", mass: 2.5 },
@@ -40,10 +41,10 @@ const edges = [
 ];
 
 const statusColors = {
-  core: "#8B5CF6",
+  core: "#7B2FFF",
   investigating: "#EF4444",
-  monitoring: "#3B82F6",
-  scanning: "#A855F7",
+  monitoring: "#4F46E5",
+  scanning: "#9B5CF6",
   idle: "#64748B",
 };
 
@@ -111,6 +112,16 @@ function drawRoundRect(ctx, x, y, width, height, radius) {
   ctx.quadraticCurveTo(x, y, x + radius, y);
 }
 
+function makeBreathingMotion() {
+  return {
+    breatheX: Math.random() * Math.PI * 2,
+    breatheY: Math.random() * Math.PI * 2,
+    breatheSpeedX: 0.0002 + Math.random() * 0.0001,
+    breatheSpeedY: 0.0001 + Math.random() * 0.0002,
+    breatheAmp: 0.04 + Math.random() * 0.03,
+  };
+}
+
 function makeNodes(width, height) {
   const core = agents.find((agent) => agent.id === "CORE");
   const agentNodes = agents.filter((agent) => agent.id !== "CORE");
@@ -135,9 +146,7 @@ function makeNodes(width, height) {
       fixed: false,
       dragging: false,
       pulsePhase: index * 0.9,
-      orbitPhase: Math.random() * Math.PI * 2,
-      orbitSpeed: 0.0003 + Math.random() * 0.0002,
-      orbitRadius: 8 + Math.random() * 12,
+      ...makeBreathingMotion(),
     };
   });
 
@@ -155,9 +164,7 @@ function makeNodes(width, height) {
       fixed: true,
       dragging: false,
       pulsePhase: agentNodes.length * 0.9,
-      orbitPhase: Math.random() * Math.PI * 2,
-      orbitSpeed: 0.0003 + Math.random() * 0.0002,
-      orbitRadius: 8 + Math.random() * 12,
+      ...makeBreathingMotion(),
     });
   }
 
@@ -166,24 +173,11 @@ function makeNodes(width, height) {
 
 function hydrateNodeMotion(node) {
   return {
-    orbitPhase: node.orbitPhase ?? Math.random() * Math.PI * 2,
-    orbitSpeed: node.orbitSpeed ?? 0.0003 + Math.random() * 0.0002,
-    orbitRadius: node.orbitRadius ?? 8 + Math.random() * 12,
-  };
-}
-
-function makeEdgeCurve(a, b) {
-  const midX = (a.x + b.x) / 2;
-  const midY = (a.y + b.y) / 2;
-  const dx = b.x - a.x;
-  const dy = b.y - a.y;
-  const len = Math.sqrt(dx * dx + dy * dy) || 1;
-  const offsetX = (-dy / len) * 20;
-  const offsetY = (dx / len) * 20;
-
-  return {
-    cpX: midX + offsetX,
-    cpY: midY + offsetY,
+    breatheX: node.breatheX ?? Math.random() * Math.PI * 2,
+    breatheY: node.breatheY ?? Math.random() * Math.PI * 2,
+    breatheSpeedX: node.breatheSpeedX ?? 0.0002 + Math.random() * 0.0001,
+    breatheSpeedY: node.breatheSpeedY ?? 0.0001 + Math.random() * 0.0002,
+    breatheAmp: node.breatheAmp ?? 0.04 + Math.random() * 0.03,
   };
 }
 
@@ -196,6 +190,13 @@ function getBezierPoint(a, b, cpX, cpY, t) {
   };
 }
 
+function hexToRgba(hex, alpha) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
+
 export default function NeuralMesh() {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -204,7 +205,7 @@ export default function NeuralMesh() {
   const nodeMapRef = useRef(new Map());
   const dimensionsRef = useRef({ width: 0, height: CANVAS_HEIGHT });
   const hoverRef = useRef(null);
-  const dragRef = useRef({ node: null, moved: false });
+  const dragRef = useRef({ node: null, moved: false, lastMouseX: 0, lastMouseY: 0, mouseX: 0, mouseY: 0 });
   const [hoveredNode, setHoveredNode] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: CANVAS_HEIGHT });
@@ -212,6 +213,37 @@ export default function NeuralMesh() {
   const syncNodeMap = useCallback(() => {
     nodeMapRef.current = new Map(nodesRef.current.map((node) => [node.id, node]));
   }, []);
+
+  const resetPositions = useCallback(() => {
+    const { width, height } = dimensionsRef.current;
+    const nodes = nodesRef.current;
+    if (!nodes.length || !width || !height) return;
+
+    const core = nodes.find((node) => node.id === "CORE");
+    if (core) {
+      core.x = width / 2;
+      core.y = height / 2;
+      core.vx = 0;
+      core.vy = 0;
+      core.ax = 0;
+      core.ay = 0;
+    }
+
+    const agentNodes = nodes.filter((node) => node.id !== "CORE");
+    const radius = Math.min(width, height) * 0.28;
+
+    agentNodes.forEach((node, index) => {
+      const angle = ((Math.PI * 2) / agentNodes.length) * index;
+      node.x = width / 2 + Math.cos(angle) * radius;
+      node.y = height / 2 + Math.sin(angle) * radius;
+      node.vx = (Math.random() - 0.5) * 0.5;
+      node.vy = (Math.random() - 0.5) * 0.5;
+      node.ax = 0;
+      node.ay = 0;
+    });
+
+    syncNodeMap();
+  }, [syncNodeMap]);
 
   const findNodeAt = useCallback((x, y) => {
     for (let i = nodesRef.current.length - 1; i >= 0; i -= 1) {
@@ -261,6 +293,7 @@ export default function NeuralMesh() {
 
       if (!previousNodes.length) {
         nodesRef.current = makeNodes(width, height);
+        resetPositions();
       } else {
         nodesRef.current = previousNodes.map((node) => ({
           ...node,
@@ -279,7 +312,7 @@ export default function NeuralMesh() {
     resizeObserver.observe(container);
 
     return () => resizeObserver.disconnect();
-  }, [syncNodeMap]);
+  }, [resetPositions, syncNodeMap]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -290,8 +323,16 @@ export default function NeuralMesh() {
       const draggingNode = dragRef.current.node;
 
       if (draggingNode) {
-        draggingNode.x = Math.max(BOUNDS_PADDING, Math.min(dimensionsRef.current.width - BOUNDS_PADDING, x));
-        draggingNode.y = Math.max(BOUNDS_PADDING, Math.min(dimensionsRef.current.height - BOUNDS_PADDING, y));
+        const targetX = Math.max(BOUNDS_PADDING, Math.min(dimensionsRef.current.width - BOUNDS_PADDING, x));
+        const targetY = Math.max(BOUNDS_PADDING, Math.min(dimensionsRef.current.height - BOUNDS_PADDING, y));
+
+        dragRef.current.lastMouseX = dragRef.current.mouseX;
+        dragRef.current.lastMouseY = dragRef.current.mouseY;
+        dragRef.current.mouseX = targetX;
+        dragRef.current.mouseY = targetY;
+
+        draggingNode.x += (targetX - draggingNode.x) * 0.3;
+        draggingNode.y += (targetY - draggingNode.y) * 0.3;
         draggingNode.vx = 0;
         draggingNode.vy = 0;
         dragRef.current.moved = true;
@@ -323,20 +364,27 @@ export default function NeuralMesh() {
       node.dragging = true;
       node.vx = 0;
       node.vy = 0;
-      dragRef.current = { node, moved: false };
+      dragRef.current = { node, moved: false, lastMouseX: x, lastMouseY: y, mouseX: x, mouseY: y };
       hoverRef.current = node;
       setHoveredNode(node);
     };
 
-    const handlePointerUp = () => {
+    const handlePointerUp = (event) => {
       const draggingNode = dragRef.current.node;
       if (!draggingNode) return;
 
+      const { x, y } = getPointerPosition(event, canvas);
+      const targetX = Math.max(BOUNDS_PADDING, Math.min(dimensionsRef.current.width - BOUNDS_PADDING, x));
+      const targetY = Math.max(BOUNDS_PADDING, Math.min(dimensionsRef.current.height - BOUNDS_PADDING, y));
+
       draggingNode.dragging = false;
+      draggingNode.vx = (targetX - dragRef.current.lastMouseX) * 0.5;
+      draggingNode.vy = (targetY - dragRef.current.lastMouseY) * 0.5;
+
       if (!dragRef.current.moved) {
         setSelectedNode({ ...draggingNode });
       }
-      dragRef.current = { node: null, moved: false };
+      dragRef.current = { node: null, moved: false, lastMouseX: 0, lastMouseY: 0, mouseX: 0, mouseY: 0 };
     };
 
     const handlePointerLeave = () => {
@@ -382,20 +430,17 @@ export default function NeuralMesh() {
           const dx = b.x - a.x;
           const dy = b.y - a.y;
           const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          const force = REPULSION / (dist * dist);
+          const fx = (dx / dist) * force;
+          const fy = (dy / dist) * force;
 
-          if (dist < REPULSION_DISTANCE) {
-            const force = REPULSION_STRENGTH / (dist * dist);
-            const fx = (dx / dist) * force;
-            const fy = (dy / dist) * force;
-
-            if (!a.fixed && !a.dragging) {
-              a.ax -= fx;
-              a.ay -= fy;
-            }
-            if (!b.fixed && !b.dragging) {
-              b.ax += fx;
-              b.ay += fy;
-            }
+          if (!a.fixed && !a.dragging) {
+            a.ax -= fx;
+            a.ay -= fy;
+          }
+          if (!b.fixed && !b.dragging) {
+            b.ax += fx;
+            b.ay += fy;
           }
         }
       }
@@ -408,9 +453,11 @@ export default function NeuralMesh() {
         const dx = b.x - a.x;
         const dy = b.y - a.y;
         const dist = Math.sqrt(dx * dx + dy * dy) || 1;
-        const force = (dist - IDEAL_LENGTH) * SPRING_STRENGTH;
-        const ax = (dx / dist) * force;
-        const ay = (dy / dist) * force;
+        const stretch = dist - IDEAL_LENGTH;
+        const force = stretch * SPRING_K;
+        const snapMultiplier = dist > IDEAL_LENGTH * 2 ? 1 + (dist / IDEAL_LENGTH) * 0.3 : 1;
+        const ax = (dx / dist) * force * snapMultiplier;
+        const ay = (dy / dist) * force * snapMultiplier;
 
         if (!a.fixed && !a.dragging) {
           a.ax += ax;
@@ -425,24 +472,46 @@ export default function NeuralMesh() {
       nodes.forEach((node) => {
         if (node.fixed || node.dragging) return;
 
-        const t = Date.now() * node.orbitSpeed + node.orbitPhase;
+        const t = Date.now();
 
         node.ax += (width / 2 - node.x) * GRAVITY;
         node.ay += (height / 2 - node.y) * GRAVITY;
-        node.ax += (Math.random() - 0.5) * 0.08;
-        node.ay += (Math.random() - 0.5) * 0.08;
-        node.ax += Math.cos(t) * 0.04;
-        node.ay += Math.sin(t) * 0.04;
+        node.ax += (Math.random() - 0.5) * DRIFT_AMP;
+        node.ay += (Math.random() - 0.5) * DRIFT_AMP;
+        node.ax += Math.sin(t * node.breatheSpeedX + node.breatheX) * node.breatheAmp;
+        node.ay += Math.cos(t * node.breatheSpeedY + node.breatheY) * node.breatheAmp;
 
-        if (node.x < BOUNDS_PADDING) node.ax += (BOUNDS_PADDING - node.x) * 0.05;
-        if (node.x > width - BOUNDS_PADDING) node.ax -= (node.x - (width - BOUNDS_PADDING)) * 0.05;
-        if (node.y < BOUNDS_PADDING) node.ay += (BOUNDS_PADDING - node.y) * 0.05;
-        if (node.y > height - BOUNDS_PADDING) node.ay -= (node.y - (height - BOUNDS_PADDING)) * 0.05;
+        node.vx += node.ax;
+        node.vy += node.ay;
 
-        node.vx = (node.vx + node.ax) * DAMPING;
-        node.vy = (node.vy + node.ay) * DAMPING;
+        const speed = Math.sqrt(node.vx ** 2 + node.vy ** 2);
+        if (speed > MAX_SPEED) {
+          node.vx = (node.vx / speed) * MAX_SPEED;
+          node.vy = (node.vy / speed) * MAX_SPEED;
+        }
+
+        node.vx *= DAMPING;
+        node.vy *= DAMPING;
         node.x += node.vx;
         node.y += node.vy;
+
+        if (node.x < BOUNDS_PADDING) {
+          node.x = BOUNDS_PADDING;
+          node.vx = Math.abs(node.vx) * 0.4;
+        }
+        if (node.x > width - BOUNDS_PADDING) {
+          node.x = width - BOUNDS_PADDING;
+          node.vx = -Math.abs(node.vx) * 0.4;
+        }
+        if (node.y < BOUNDS_PADDING) {
+          node.y = BOUNDS_PADDING;
+          node.vy = Math.abs(node.vy) * 0.4;
+        }
+        if (node.y > height - BOUNDS_PADDING) {
+          node.y = height - BOUNDS_PADDING;
+          node.vy = -Math.abs(node.vy) * 0.4;
+        }
+
         node.ax = 0;
         node.ay = 0;
       });
@@ -450,13 +519,13 @@ export default function NeuralMesh() {
 
     const drawBackground = (width, height) => {
       const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height) * 0.6);
-      bgGrad.addColorStop(0, "rgba(139,92,246,0.06)");
-      bgGrad.addColorStop(0.5, "rgba(59,130,246,0.02)");
-      bgGrad.addColorStop(1, "rgba(7,11,20,0)");
+      bgGrad.addColorStop(0, "rgba(123,47,255,0.08)");
+      bgGrad.addColorStop(0.5, "rgba(155,92,246,0.03)");
+      bgGrad.addColorStop(1, "rgba(5,3,15,0)");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(59,130,246,0.03)";
+      ctx.strokeStyle = "rgba(123,47,255,0.04)";
       ctx.lineWidth = 1;
       for (let x = 0; x < width; x += 40) {
         ctx.beginPath();
@@ -476,29 +545,39 @@ export default function NeuralMesh() {
       const a = nodeMapRef.current.get(edge.from);
       const b = nodeMapRef.current.get(edge.to);
       if (!a || !b) return;
-      const { cpX, cpY } = makeEdgeCurve(a, b);
 
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+      const tension = dist / IDEAL_LENGTH;
+      const alpha = 0.25;
       const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-      gradient.addColorStop(0, `${a.color}${highlighted ? "99" : "40"}`);
-      gradient.addColorStop(1, `${b.color}${highlighted ? "99" : "40"}`);
+      gradient.addColorStop(0, hexToRgba(a.color, alpha));
+      gradient.addColorStop(1, hexToRgba(b.color, alpha));
+
+      const midX = (a.x + b.x) / 2;
+      const midY = (a.y + b.y) / 2;
+      const cpX = midX + (-dy / dist) * (15 + tension * 5);
+      const cpY = midY + (dx / dist) * (15 + tension * 5);
 
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.quadraticCurveTo(cpX, cpY, b.x, b.y);
       ctx.strokeStyle = gradient;
-      ctx.lineWidth = highlighted ? 2 : 1.2;
+      ctx.lineWidth = 1;
       ctx.stroke();
 
       if (highlighted) return;
 
       for (let p = 0; p < 2; p += 1) {
-        const t = (Date.now() * 0.0004 + p * 0.5 + edgeIndex * 0.3) % 1;
+        const t = (Date.now() * 0.0005 + p * 0.5 + edgeIndex * 0.2) % 1;
         const point = getBezierPoint(a, b, cpX, cpY, t);
+        const pulseRadius = 2 + tension * 0.5;
 
         ctx.beginPath();
-        ctx.arc(point.x, point.y, 2.5, 0, Math.PI * 2);
+        ctx.arc(point.x, point.y, pulseRadius, 0, Math.PI * 2);
         ctx.fillStyle = a.color;
-        ctx.shadowBlur = 8;
+        ctx.shadowBlur = 8 + tension * 4;
         ctx.shadowColor = a.color;
         ctx.fill();
         ctx.shadowBlur = 0;
@@ -508,7 +587,10 @@ export default function NeuralMesh() {
     const drawNode = (node) => {
       const hovered = node.id === hoverRef.current?.id;
       const pulse = Math.sin(Date.now() * 0.002 + node.pulsePhase);
-      const auraRadius = node.radius + 8 + pulse * 4;
+      const speed = Math.sqrt(node.vx ** 2 + node.vy ** 2);
+      const energyPulse = Math.min(speed * 0.3, 4);
+      const displayRadius = node.radius + energyPulse;
+      const auraRadius = displayRadius + 8 + pulse * 4;
 
       [0.04, 0.08, 0.12].forEach((opacity, i) => {
         const r = auraRadius - i * 4;
@@ -522,27 +604,27 @@ export default function NeuralMesh() {
       });
 
       const gradient = ctx.createRadialGradient(
-        node.x - node.radius * 0.3,
-        node.y - node.radius * 0.3,
+        node.x - displayRadius * 0.3,
+        node.y - displayRadius * 0.3,
         0,
         node.x,
         node.y,
-        node.radius,
+        displayRadius,
       );
       gradient.addColorStop(0, `${node.color}FF`);
       gradient.addColorStop(0.6, `${node.color}CC`);
       gradient.addColorStop(1, `${node.color}88`);
 
       ctx.beginPath();
-      ctx.arc(node.x, node.y, node.radius, 0, Math.PI * 2);
+      ctx.arc(node.x, node.y, displayRadius, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
-      ctx.shadowBlur = node.id === "CORE" ? 60 : hovered ? 40 : 20;
-      ctx.shadowColor = node.id === "CORE" ? "#8B5CF6" : node.color;
+      ctx.shadowBlur = (node.id === "CORE" ? 60 : hovered ? 40 : 20) + energyPulse * 3;
+      ctx.shadowColor = node.id === "CORE" ? "rgba(123,47,255,0.6)" : node.color;
       ctx.fill();
       ctx.shadowBlur = 0;
 
       ctx.beginPath();
-      ctx.arc(node.x - node.radius * 0.25, node.y - node.radius * 0.25, node.radius * 0.25, 0, Math.PI * 2);
+      ctx.arc(node.x - displayRadius * 0.25, node.y - displayRadius * 0.25, displayRadius * 0.25, 0, Math.PI * 2);
       ctx.fillStyle = "rgba(255,255,255,0.4)";
       ctx.fill();
 
@@ -551,7 +633,7 @@ export default function NeuralMesh() {
 
         ctx.beginPath();
         ctx.arc(node.x, node.y, coreRing, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(139,92,246,0.2)";
+        ctx.strokeStyle = "rgba(123,47,255,0.2)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
@@ -561,7 +643,7 @@ export default function NeuralMesh() {
         ctx.beginPath();
         ctx.arc(0, 0, 42, 0, Math.PI * 2);
         ctx.setLineDash([4, 8]);
-        ctx.strokeStyle = "#8B5CF660";
+        ctx.strokeStyle = "#7B2FFF66";
         ctx.lineWidth = 1;
         ctx.stroke();
         ctx.setLineDash([]);
@@ -573,7 +655,7 @@ export default function NeuralMesh() {
         ctx.beginPath();
         ctx.arc(0, 0, 52, 0, Math.PI * 2);
         ctx.setLineDash([2, 12]);
-        ctx.strokeStyle = "#06B6D440";
+        ctx.strokeStyle = "#9B5CF640";
         ctx.lineWidth = 1;
         ctx.stroke();
         ctx.setLineDash([]);
@@ -583,21 +665,21 @@ export default function NeuralMesh() {
       ctx.fillStyle = "#FFFFFF";
       ctx.font = "bold 11px 'JetBrains Mono'";
       ctx.textAlign = "center";
-      ctx.fillText(node.id, node.x, node.y + node.radius + 16);
+      ctx.fillText(node.id, node.x, node.y + displayRadius + 16);
 
       ctx.fillStyle = node.color;
       ctx.font = "10px 'Syne'";
-      ctx.fillText(node.role, node.x, node.y + node.radius + 28);
+      ctx.fillText(node.role, node.x, node.y + displayRadius + 28);
 
       const badgeText = node.status.toUpperCase();
       const badgeW = ctx.measureText(badgeText).width + 12;
       ctx.fillStyle = `${node.color}25`;
       ctx.beginPath();
-      drawRoundRect(ctx, node.x - badgeW / 2, node.y + node.radius + 32, badgeW, 14, 4);
+      drawRoundRect(ctx, node.x - badgeW / 2, node.y + displayRadius + 32, badgeW, 14, 4);
       ctx.fill();
       ctx.fillStyle = node.color;
       ctx.font = "8px 'JetBrains Mono'";
-      ctx.fillText(badgeText, node.x, node.y + node.radius + 42);
+      ctx.fillText(badgeText, node.x, node.y + displayRadius + 42);
     };
 
     const draw = () => {
@@ -640,7 +722,7 @@ export default function NeuralMesh() {
     <div className="flex w-full items-start gap-4">
       <div
         ref={containerRef}
-        className="relative h-[480px] min-w-0 flex-1 overflow-hidden rounded-2xl border border-[rgba(139,92,246,0.2)] bg-[#070B14]"
+        className="relative h-[480px] min-w-0 flex-1 overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.2)] bg-[var(--bg-base)]"
       >
         <canvas
           ref={canvasRef}
@@ -661,7 +743,7 @@ export default function NeuralMesh() {
               style={{
                 left: Math.min(hoveredNode.x + 20, Math.max(dimensions.width - 238, 12)),
                 top: Math.max(12, hoveredNode.y - 20),
-                background: "rgba(7,11,20,0.95)",
+                background: "rgba(5,3,15,0.95)",
                 borderColor: `${hoveredNode.color}40`,
                 boxShadow: `0 0 20px ${hoveredNode.color}20`,
               }}
@@ -686,7 +768,7 @@ export default function NeuralMesh() {
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="relative h-[480px] shrink-0 overflow-hidden rounded-2xl border border-[rgba(139,92,246,0.2)] bg-[rgba(15,23,42,0.97)] p-5 shadow-[-18px_0_32px_rgba(2,6,23,0.22)] backdrop-blur-md"
+            className="relative h-[480px] shrink-0 overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.2)] bg-[rgba(13,11,26,0.97)] p-5 shadow-[-18px_0_32px_rgba(2,1,8,0.22)] backdrop-blur-md"
           >
             <button
               type="button"

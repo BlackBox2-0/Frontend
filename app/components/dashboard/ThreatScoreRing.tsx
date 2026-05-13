@@ -11,7 +11,7 @@ const offset = circumference * (1 - score / 100);
 
 const pills = [
   { label: "INTERNAL", value: "71", color: "var(--glow-violet)" },
-  { label: "EXTERNAL", value: "64", color: "var(--glow-blue-light)" },
+  { label: "EXTERNAL", value: "64", color: "var(--glow-blue-mid)" },
   { label: "BEHAVIORAL", value: "58", color: "var(--alert-orange)" },
 ];
 
@@ -54,14 +54,14 @@ export default function ThreatScoreRing() {
 
       <div
         aria-hidden="true"
-        className="absolute left-1/2 top-[54%] size-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,color-mix(in_srgb,var(--glow-blue)_12%,transparent),transparent_68%)] blur-[40px]"
+        className="absolute left-1/2 top-[54%] size-[200px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-[radial-gradient(circle,rgba(123,47,255,0.15),transparent_68%)] blur-[40px]"
       />
 
       <div className="relative z-10 mx-auto mt-5 flex size-60 items-center justify-center">
         <svg aria-hidden="true" viewBox="0 0 240 240" className="absolute inset-0 size-full -rotate-90">
           <defs>
             <linearGradient id="blueGradient" x1="30" x2="210" y1="30" y2="210">
-              <stop stopColor="var(--glow-blue)" />
+              <stop stopColor="var(--glow-purple)" />
               <stop offset="1" stopColor="var(--glow-cyan)" />
             </linearGradient>
           </defs>
@@ -70,7 +70,7 @@ export default function ThreatScoreRing() {
             cy="120"
             r={radius}
             fill="none"
-            stroke="color-mix(in srgb, var(--glow-blue) 10%, transparent)"
+            stroke="rgba(123,47,255,0.1)"
             strokeWidth="8"
           />
           <motion.circle

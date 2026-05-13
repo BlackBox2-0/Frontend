@@ -99,7 +99,7 @@ export default function ActivityFeed() {
             className={[
               "rounded-full border px-3 py-1 font-body text-[11px] transition",
               index === 0
-                ? "border-[var(--glow-blue)] bg-[color-mix(in_srgb,var(--glow-blue)_15%,transparent)] text-[var(--glow-blue-light)]"
+                ? "border-[var(--glow-purple)] bg-[rgba(123,47,255,0.15)] text-[var(--glow-violet-light)]"
                 : "border-[color-mix(in_srgb,var(--text-primary)_6%,transparent)] text-[var(--text-muted)] hover:bg-[color-mix(in_srgb,var(--text-primary)_3%,transparent)]",
             ].join(" ")}
           >
@@ -123,7 +123,7 @@ export default function ActivityFeed() {
 
       <a
         href="#"
-        className="mt-4 inline-flex font-body text-xs text-[var(--glow-blue)] transition hover:underline"
+        className="mt-4 inline-flex font-body text-xs text-[var(--glow-violet)] transition hover:underline"
       >
         View all events →
       </a>

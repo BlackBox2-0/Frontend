@@ -48,8 +48,8 @@ const statusStyles: Record<EmployeeStatus, { bg: string; color: string }> = {
   CRITICAL: { bg: "rgba(239,68,68,0.15)", color: "#EF4444" },
   HIGH: { bg: "rgba(249,115,22,0.15)", color: "#F97316" },
   "BURNOUT RISK": { bg: "rgba(245,158,11,0.15)", color: "#F59E0B" },
-  MEDIUM: { bg: "rgba(59,130,246,0.15)", color: "#3B82F6" },
-  LOW: { bg: "rgba(100,116,139,0.15)", color: "#94A3B8" },
+  MEDIUM: { bg: "rgba(123,47,255,0.15)", color: "#9B5CF6" },
+  LOW: { bg: "rgba(107,114,128,0.15)", color: "#6B7280" },
   SECURE: { bg: "rgba(34,197,94,0.15)", color: "#22C55E" },
 };
 
@@ -120,7 +120,7 @@ const employees: Employee[] = [
   },
   {
     initials: "PG",
-    avatar: "linear-gradient(135deg,#A855F7,#3B82F6)",
+    avatar: "linear-gradient(135deg,#9B5CF6,#7B2FFF)",
     name: "P. Garcia",
     role: "HR Manager",
     dept: "HR",
@@ -136,7 +136,7 @@ const employees: Employee[] = [
   },
   {
     initials: "AL",
-    avatar: "linear-gradient(135deg,#3B82F6,#06B6D4)",
+    avatar: "linear-gradient(135deg,#4F46E5,#06B6D4)",
     name: "A. Lopez",
     role: "Dev Lead",
     dept: "Engineering",
@@ -151,7 +151,7 @@ const employees: Employee[] = [
   },
   {
     initials: "CM",
-    avatar: "linear-gradient(135deg,#06B6D4,#3B82F6)",
+    avatar: "linear-gradient(135deg,#06B6D4,#4F46E5)",
     name: "C. Mendez",
     role: "Analyst",
     dept: "Finance",
@@ -181,7 +181,7 @@ const employees: Employee[] = [
   },
   {
     initials: "SC",
-    avatar: "linear-gradient(135deg,#22C55E,#3B82F6)",
+    avatar: "linear-gradient(135deg,#22C55E,#4F46E5)",
     name: "S. Castro",
     role: "Designer",
     dept: "Creative",
@@ -196,7 +196,7 @@ const employees: Employee[] = [
   },
   {
     initials: "AR",
-    avatar: "linear-gradient(135deg,#3B82F6,#A855F7)",
+    avatar: "linear-gradient(135deg,#7B2FFF,#9B5CF6)",
     name: "A. Reyes",
     role: "Security Analyst",
     dept: "Security",
@@ -316,12 +316,12 @@ function seededValue(day: number, hour: number) {
 }
 
 function heatColor(value: number) {
-  if (value === 0) return "rgba(59,130,246,0.05)";
-  if (value <= 2) return "rgba(59,130,246,0.15)";
-  if (value <= 4) return "rgba(59,130,246,0.25)";
-  if (value <= 6) return "rgba(139,92,246,0.35)";
-  if (value <= 8) return "rgba(239,68,68,0.45)";
-  return "rgba(239,68,68,0.75)";
+  if (value === 0) return "rgba(123,47,255,0.05)";
+  if (value <= 2) return "rgba(123,47,255,0.15)";
+  if (value <= 4) return "rgba(123,47,255,0.28)";
+  if (value <= 6) return "rgba(155,92,246,0.40)";
+  if (value <= 8) return "rgba(239,68,68,0.50)";
+  return "rgba(239,68,68,0.80)";
 }
 
 function riskBarColor(risk: number) {
@@ -393,14 +393,14 @@ function Header() {
         </div>
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-md border border-[var(--glow-purple)] bg-transparent px-4 py-2 font-body text-xs font-semibold text-white/90 transition hover:bg-[rgba(139,92,246,0.08)]"
+          className="inline-flex items-center gap-2 rounded-md border border-[var(--glow-purple)] bg-transparent px-4 py-2 font-body text-xs font-semibold text-[var(--glow-violet)] transition hover:bg-[rgba(123,47,255,0.1)] hover:shadow-[0_0_12px_rgba(123,47,255,0.25)]"
         >
           <Download aria-hidden className="size-4" />
           Export Report
         </button>
         <button
           type="button"
-          className="inline-flex items-center gap-2 rounded-md bg-[var(--glow-purple)] px-4 py-2 font-body text-xs font-bold text-white transition hover:shadow-[0_0_20px_rgba(139,92,246,0.5)]"
+          className="inline-flex items-center gap-2 rounded-md bg-[var(--glow-purple)] px-4 py-2 font-body text-xs font-bold text-white shadow-[0_0_20px_rgba(123,47,255,0.4)] transition hover:bg-[var(--glow-purple-mid)]"
         >
           <UserPlus aria-hidden className="size-4" />
           Flag Employee
@@ -502,8 +502,8 @@ function RiskTable({
             className={[
               "rounded-full border px-3 py-1.5 font-body text-[11px] font-semibold transition",
               filter === "All"
-                ? "border-[var(--glow-purple)] bg-[rgba(139,92,246,0.14)] text-white"
-                : "border-white/10 bg-white/[0.03] text-[var(--text-muted)] hover:border-[rgba(139,92,246,0.45)] hover:text-white",
+                ? "border-[var(--glow-purple)] bg-[rgba(123,47,255,0.15)] text-[var(--glow-violet-light)]"
+                : "border-white/10 bg-white/[0.03] text-[var(--text-muted)] hover:border-[rgba(123,47,255,0.45)] hover:text-white",
             ].join(" ")}
           >
             {filter}
@@ -533,7 +533,7 @@ function RiskTable({
                   onClick={() => onSelect(employee)}
                   className={[
                     "cursor-pointer border-b border-white/[0.04] transition hover:bg-white/[0.02]",
-                    active ? "bg-[rgba(139,92,246,0.08)]" : "",
+                    active ? "bg-[rgba(123,47,255,0.08)]" : "",
                   ].join(" ")}
                 >
                   <td className="px-2 py-3">
@@ -546,7 +546,7 @@ function RiskTable({
                     </div>
                   </td>
                   <td className="px-2 py-3">
-                    <span className="rounded-full bg-[rgba(59,130,246,0.1)] px-2.5 py-1 font-mono text-[10px] text-[#60A5FA]">
+                    <span className="rounded-full bg-[rgba(123,47,255,0.1)] px-2.5 py-1 font-mono text-[10px] text-[#C084FC]">
                       {employee.dept}
                     </span>
                   </td>
@@ -692,7 +692,7 @@ function ActivityHeatmap({ employee }: { employee: Employee }) {
       </div>
       {hovered ? (
         <div
-          className="pointer-events-none fixed z-50 rounded-lg border border-[rgba(139,92,246,0.25)] bg-[rgba(2,6,23,0.92)] px-3 py-2 font-mono text-[11px] text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-xl"
+          className="pointer-events-none fixed z-50 rounded-lg border border-[rgba(123,47,255,0.25)] bg-[rgba(2,1,8,0.92)] px-3 py-2 font-mono text-[11px] text-white shadow-[0_12px_28px_rgba(0,0,0,0.35)] backdrop-blur-xl"
           style={{ left: hovered.x + 12, top: hovered.y + 12 }}
         >
           {hovered.day} {hovered.hour}:00 · {hovered.value} events · {hovered.value >= 8 ? "ANOMALOUS" : "NORMAL"}

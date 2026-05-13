@@ -1,5 +1,5 @@
-import BlockchainLedger from "../components/blockchain/BlockchainLedger";
+import BlockchainOperations from "../components/blockchain/BlockchainOperations";
 
 export default function BlockchainPage() {
-  return <BlockchainLedger />;
+  return <BlockchainOperations />;
 }

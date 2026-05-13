@@ -72,7 +72,7 @@ export default function ReportsCenter() {
         <StatCard icon={FileChartColumn} label="REPORTS GENERATED" value="38" sub="+9 in last 24h" color="#06B6D4" />
         <StatCard icon={ShieldAlert} label="CRITICAL FINDINGS" value="14" sub="5 require review" color="#EF4444" />
         <StatCard icon={CheckCircle2} label="COMPLIANCE READY" value="91%" sub="Audit pack coverage" color="#22C55E" />
-        <StatCard icon={Sparkles} label="AI SUMMARIES" value="127" sub="Auto-generated insights" color="#8B5CF6" />
+        <StatCard icon={Sparkles} label="AI SUMMARIES" value="127" sub="Auto-generated insights" color="#7B2FFF" />
       </section>
 
       <section className="mt-6 grid grid-cols-1 gap-5 2xl:grid-cols-[60fr_40fr]">
@@ -112,7 +112,7 @@ function Header() {
           <Filter aria-hidden className="size-4" />
           Filter
         </button>
-        <button type="button" className="inline-flex items-center gap-2 rounded-md bg-[var(--glow-blue)] px-4 py-2 font-body text-xs font-bold text-white transition hover:shadow-[0_0_20px_rgba(59,130,246,0.45)]">
+        <button type="button" className="inline-flex items-center gap-2 rounded-md bg-[var(--glow-purple)] px-4 py-2 font-body text-xs font-bold text-white shadow-[0_0_20px_rgba(123,47,255,0.4)] transition hover:bg-[var(--glow-purple-mid)]">
           <Download aria-hidden className="size-4" />
           Export Pack
         </button>
@@ -174,7 +174,7 @@ function ReportsTable() {
               <tr key={report.title} className="border-b border-white/[0.04] transition hover:bg-white/[0.03]">
                 <td className="px-2 py-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-9 items-center justify-center rounded-lg bg-[rgba(59,130,246,0.12)] text-[var(--glow-blue-light)]">
+                    <div className="flex size-9 items-center justify-center rounded-lg bg-[rgba(123,47,255,0.12)] text-[var(--glow-violet-light)]">
                       <FileText aria-hidden className="size-4" />
                     </div>
                     <span className="font-body text-sm font-semibold text-white">{report.title}</span>

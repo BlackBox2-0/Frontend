@@ -7,7 +7,7 @@ import ThreatFeedItem, { type ThreatFeedItemData } from "./ThreatFeedItem";
 const criticalBg = "rgba(239,68,68,0.15)";
 const highBg = "rgba(249,115,22,0.15)";
 const mediumBg = "rgba(245,158,11,0.15)";
-const lowBg = "rgba(59,130,246,0.15)";
+const lowBg = "rgba(123,47,255,0.15)";
 const infoBg = "rgba(148,163,184,0.15)";
 const resolvedBg = "rgba(34,197,94,0.15)";
 
@@ -172,7 +172,7 @@ export default function ThreatFeed() {
       </div>
 
       <div className="mt-3 flex flex-wrap gap-2">
-        <label className="flex h-9 w-full max-w-[240px] items-center gap-2 rounded-lg border border-[rgba(59,130,246,0.2)] bg-white/[0.04] px-3 transition focus-within:border-[var(--glow-blue)] focus-within:shadow-[0_0_14px_color-mix(in_srgb,var(--glow-blue)_24%,transparent)]">
+        <label className="flex h-9 w-full max-w-[240px] items-center gap-2 rounded-lg border border-[rgba(123,47,255,0.2)] bg-white/[0.04] px-3 transition focus-within:border-[var(--glow-purple)] focus-within:shadow-[0_0_14px_rgba(123,47,255,0.24)]">
           <Search aria-hidden className="size-4 text-[var(--text-muted)]" />
           <input
             type="search"
@@ -185,14 +185,14 @@ export default function ThreatFeed() {
             key={select}
             aria-label={select}
             defaultValue={select}
-            className="h-9 rounded-lg border border-[rgba(59,130,246,0.2)] bg-[var(--bg-card)] px-3 font-mono text-xs text-[var(--text-secondary)] outline-none transition hover:border-[rgba(59,130,246,0.35)] focus:border-[var(--glow-blue)] focus:shadow-[0_0_14px_color-mix(in_srgb,var(--glow-blue)_24%,transparent)]"
+            className="h-9 rounded-lg border border-[rgba(123,47,255,0.2)] bg-[var(--bg-card)] px-3 font-mono text-xs text-[var(--text-secondary)] outline-none transition hover:border-[rgba(123,47,255,0.35)] focus:border-[var(--glow-purple)] focus:shadow-[0_0_14px_rgba(123,47,255,0.24)]"
           >
             <option>{select}</option>
           </select>
         ))}
         <button
           type="button"
-          className="h-9 rounded-lg border border-[var(--glow-blue)] px-4 font-body text-xs font-semibold text-[var(--glow-blue-light)] transition hover:bg-[color-mix(in_srgb,var(--glow-blue)_10%,transparent)] hover:shadow-[0_0_14px_color-mix(in_srgb,var(--glow-blue)_24%,transparent)]"
+          className="h-9 rounded-lg border border-[var(--glow-purple)] px-4 font-body text-xs font-semibold text-[var(--glow-violet)] transition hover:bg-[rgba(123,47,255,0.1)] hover:shadow-[0_0_14px_rgba(123,47,255,0.24)]"
         >
           Filter
         </button>

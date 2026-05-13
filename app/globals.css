@@ -1,32 +1,41 @@
 @import "tailwindcss";
 
 :root {
-  --bg-base: #070B14;
-  --bg-surface: #0F172A;
-  --bg-card: #111827;
-  --bg-deep: #020617;
-  --glow-blue: #3B82F6;
-  --glow-blue-strong: #2563EB;
+  --bg-base: #05030F;
+  --bg-surface: #0D0B1A;
+  --bg-card: #13101F;
+  --bg-deep: #020108;
+  --bg-elevated: #1A1630;
+  --glow-purple: #7B2FFF;
+  --glow-purple-mid: #6B21E8;
+  --glow-purple-dark: #4C1D95;
+  --glow-violet: #9B5CF6;
+  --glow-violet-light: #C084FC;
+  --glow-blue: #3B3F8C;
+  --glow-blue-mid: #4F46E5;
+  --glow-blue-strong: #4F46E5;
   --glow-cyan: #06B6D4;
-  --glow-blue-light: #60A5FA;
-  --glow-purple: #8B5CF6;
-  --glow-purple-dark: #7C3AED;
-  --glow-violet: #A855F7;
+  --glow-blue-light: #9B5CF6;
   --alert-red: #EF4444;
   --alert-orange: #F97316;
   --alert-yellow: #F59E0B;
+  --alert-green: #22C55E;
   --ok-green: #22C55E;
   --bb-idle: #374151;
-  --bb-card-border: rgba(59, 130, 246, 0.12);
-  --bb-card-border-hover: rgba(59, 130, 246, 0.3);
-  --bb-divider: rgba(255, 255, 255, 0.06);
-  --bb-map-fill: rgba(59, 130, 246, 0.05);
-  --bb-map-stroke: rgba(59, 130, 246, 0.15);
-  --bb-scrollbar: rgba(59, 130, 246, 0.3);
+  --bb-card-border: rgba(123, 47, 255, 0.15);
+  --bb-card-border-hover: rgba(123, 47, 255, 0.35);
+  --bb-divider: rgba(123, 47, 255, 0.1);
+  --bb-map-fill: rgba(123, 47, 255, 0.05);
+  --bb-map-stroke: rgba(123, 47, 255, 0.15);
+  --bb-scrollbar: rgba(123, 47, 255, 0.3);
   --text-primary: #FFFFFF;
-  --text-secondary: #CBD5E1;
-  --text-muted: #94A3B8;
-  --text-dim: #64748B;
+  --text-secondary: #C4B5FD;
+  --text-muted: #6B7280;
+  --text-accent: #A78BFA;
+  --text-dim: #6B7280;
+  --border-primary: rgba(123, 47, 255, 0.25);
+  --border-subtle: rgba(123, 47, 255, 0.1);
+  --border-glow: rgba(123, 47, 255, 0.4);
   --background: var(--bg-base);
   --foreground: var(--text-primary);
 }
@@ -62,8 +71,11 @@ input {
 .blackbooks-main {
   background-color: var(--bg-base);
   background-image:
-    linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+    radial-gradient(circle at top left, rgba(123, 47, 255, 0.07), transparent 34%),
+    radial-gradient(circle at bottom right, rgba(75, 29, 148, 0.05), transparent 36%),
+    radial-gradient(circle at center, rgba(109, 40, 217, 0.04), transparent 42%),
+    linear-gradient(rgba(123, 47, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(123, 47, 255, 0.025) 1px, transparent 1px);
   background-size: 34px 34px;
 }
 
@@ -82,7 +94,7 @@ input {
   top: 64px;
   width: 520px;
   height: 520px;
-  background: radial-gradient(circle, rgba(59, 130, 246, 0.06), transparent 64%);
+  background: radial-gradient(circle, rgba(123, 47, 255, 0.07), transparent 64%);
 }
 
 .blackbooks-main::after {
@@ -90,7 +102,7 @@ input {
   bottom: -120px;
   width: 620px;
   height: 620px;
-  background: radial-gradient(circle, rgba(139, 92, 246, 0.05), transparent 66%);
+  background: radial-gradient(circle, rgba(75, 29, 148, 0.05), transparent 66%);
   animation-delay: -4s;
 }
 
@@ -103,7 +115,7 @@ input {
 
 .bb-card:hover {
   border-color: var(--bb-card-border-hover);
-  box-shadow: 0 0 24px rgba(59, 130, 246, 0.08);
+  box-shadow: 0 0 24px rgba(123, 47, 255, 0.1);
 }
 
 .bb-scrollbar {
@@ -181,5 +193,63 @@ input {
   50% {
     opacity: 1;
     transform: scale(1.08);
+  }
+}
+
+.bb-radar-sweep {
+  transform-origin: 300px 300px;
+  animation: radarSpin 4s linear infinite;
+}
+
+.bb-node-pulse {
+  animation-name: bbBlockchainNodePulse;
+  animation-timing-function: ease-out;
+  animation-iteration-count: infinite;
+}
+
+.bb-map-route {
+  animation: bbMapRoute 1.2s linear infinite, bbMapRouteFade 3s ease-out forwards;
+}
+
+@keyframes radarSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes bbBlockchainNodePulse {
+  0% {
+    transform: scale(0.35);
+    opacity: 0.8;
+  }
+
+  100% {
+    transform: scale(1.8);
+    opacity: 0;
+  }
+}
+
+@keyframes bbMapRoute {
+  from {
+    stroke-dashoffset: 80;
+  }
+
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes bbMapRouteFade {
+  0%,
+  70% {
+    opacity: 0.9;
+  }
+
+  100% {
+    opacity: 0;
   }
 }

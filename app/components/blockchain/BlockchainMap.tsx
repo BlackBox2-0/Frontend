@@ -3,7 +3,9 @@
 import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { ComposableMap, Geographies, Geography, Line, Marker } from "react-simple-maps";
-import { blockchainNodes } from "../blockchain/blockchainData";
+import useCountUp from "../../hooks/useCountUp";
+import { blockchainNodes } from "./blockchainData";
+import RadarBackground from "./RadarBackground";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -18,10 +20,12 @@ const linePairs = [
   [9, 3],
 ];
 
-const stats = [
-  { label: "10 Global Nodes", color: "var(--glow-cyan)" },
-  { label: "2 Threat Origins", color: "var(--alert-red)" },
-  { label: "4 Live Routes", color: "var(--glow-purple)" },
+const bottomStats = [
+  { label: "BLOCKS TODAY", target: 12847, suffix: "", color: "#FFFFFF" },
+  { label: "RECORDS SEALED", target: 4291, suffix: "", color: "#06B6D4" },
+  { label: "THREATS LOGGED", target: 234, suffix: "", color: "#EF4444" },
+  { label: "NODES ACTIVE", target: 8, suffix: " / 10", color: "#22C55E" },
+  { label: "CHAIN INTEGRITY", target: 100, suffix: "%", color: "#7B2FFF" },
 ];
 
 type ActiveLine = {
@@ -31,7 +35,7 @@ type ActiveLine = {
   color: string;
 };
 
-export default function NetworkActivityMap() {
+export default function BlockchainMap() {
   const [activeLines, setActiveLines] = useState<ActiveLine[]>([]);
 
   useEffect(() => {
@@ -52,40 +56,29 @@ export default function NetworkActivityMap() {
         setActiveLines((lines) => lines.filter((item) => item.id !== line.id));
       }, 3000);
       index += 1;
-    }, 2600);
+    }, 5000);
 
     return () => window.clearInterval(timer);
   }, []);
 
   return (
-    <motion.article
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.48, ease: "easeOut", delay: 0.12 }}
-      className="bb-card mt-5 overflow-hidden p-5"
+    <motion.section
+      initial={{ opacity: 0, scale: 0.98 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.8, ease: "easeOut", delay: 0.1 }}
+      className="relative order-1 h-[70vh] overflow-hidden lg:order-none lg:h-[calc(100vh-48px)]"
     >
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="font-body text-sm font-semibold text-[var(--text-primary)]">Network Activity Map</h2>
-          <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
-            Blockchain node distribution · real-time
-          </p>
-        </div>
-        <p className="font-mono text-[11px] text-[var(--text-muted)]">
-          <span className="text-[var(--glow-cyan)]">SYNCED</span>
-          <span className="px-2 text-[var(--text-dim)]">·</span>
-          <span className="text-[var(--alert-red)]">LIVE ROUTES</span>
-        </p>
+      <RadarBackground />
+      <div className="absolute left-0 top-0 z-10 p-4">
+        <h1 className="font-body text-[9px] font-bold uppercase tracking-[0.2em] text-[#7B2FFF]">◈ BLOCKCHAIN NETWORK</h1>
+        <p className="mt-1 font-mono text-[10px] text-[#C4B5FD]">Global Node Distribution · Real-time</p>
       </div>
 
-      <div className="relative mt-4 h-[260px] overflow-hidden rounded-md border border-[rgba(123,47,255,0.12)] bg-[rgba(2,1,8,0.45)] md:h-[320px]">
-        <div aria-hidden className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(123,47,255,0.12),transparent_58%)]" />
-        <div aria-hidden className="absolute inset-0 opacity-25 [background-image:linear-gradient(rgba(123,47,255,0.12)_1px,transparent_1px),linear-gradient(90deg,rgba(123,47,255,0.12)_1px,transparent_1px)] [background-size:44px_44px]" />
-
+      <div className="relative z-[2] h-[calc(70vh-80px)] pt-8 lg:h-[calc(100vh-48px-80px)]">
         <ComposableMap
           projection="geoMercator"
-          projectionConfig={{ scale: 135, center: [20, 18] }}
-          className="relative z-[1] h-full w-full drop-shadow-[0_0_18px_rgba(123,47,255,0.16)]"
+          projectionConfig={{ scale: 140, center: [20, 15] }}
+          className="h-full w-full drop-shadow-[0_0_18px_rgba(123,47,255,0.15)]"
         >
           <Geographies geography={geoUrl}>
             {({ geographies }) =>
@@ -94,11 +87,11 @@ export default function NetworkActivityMap() {
                   key={geo.rsmKey}
                   geography={geo}
                   fill="rgba(123,47,255,0.05)"
-                  stroke="rgba(123,47,255,0.35)"
+                  stroke="rgba(123,47,255,0.18)"
                   strokeWidth={0.5}
                   style={{
                     default: { outline: "none" },
-                    hover: { fill: "rgba(123,47,255,0.25)", outline: "none" },
+                    hover: { fill: "rgba(123,47,255,0.16)", outline: "none", cursor: "pointer" },
                     pressed: { outline: "none" },
                   }}
                 />
@@ -122,50 +115,54 @@ export default function NetworkActivityMap() {
 
           {blockchainNodes.map((node) => (
             <Marker key={node.id} coordinates={node.coords}>
-              {[12, 8].map((r, index) => (
+              {[16, 11, 7].map((r, index) => (
                 <circle
                   key={r}
                   r={r}
                   fill="none"
                   stroke={node.color}
                   strokeWidth={0.8}
-                  strokeOpacity={0.28 - index * 0.08}
+                  strokeOpacity={0.3 - index * 0.08}
                   className="bb-node-pulse"
                   style={{ animationDuration: `${1.5 + index * 0.5}s`, transformOrigin: "center" }}
                 />
               ))}
-              <circle r={3.5} fill={node.color} style={{ filter: `drop-shadow(0 0 6px ${node.color})` }} />
+              <circle r={4} fill={node.color} style={{ filter: `drop-shadow(0 0 6px ${node.color})` }} />
               <text
-                y={-10}
+                y={-12}
                 textAnchor="middle"
                 style={{
                   fontFamily: "var(--font-jetbrains-mono)",
-                  fontSize: "7px",
+                  fontSize: "8px",
                   fill: node.color,
                   fillOpacity: 0.9,
                 }}
               >
-                {node.label.split(" · ")[0]}
+                {node.label}
               </text>
             </Marker>
           ))}
         </ComposableMap>
       </div>
 
-      <div className="mt-2 flex flex-wrap gap-2">
-        {stats.map((stat) => (
-          <span
-            key={stat.label}
-            className="rounded border border-[var(--bb-divider)] px-2.5 py-1 font-mono text-[10px]"
-            style={{
-              background: `color-mix(in srgb, ${stat.color} 9%, transparent)`,
-              color: stat.color,
-            }}
-          >
-            {stat.label}
-          </span>
+      <div className="relative z-10 grid h-20 grid-cols-5 border-t border-[rgba(123,47,255,0.15)] bg-[rgba(13,11,26,0.9)]">
+        {bottomStats.map((stat, index) => (
+          <BottomStat key={stat.label} {...stat} divider={index > 0} />
         ))}
       </div>
-    </motion.article>
+    </motion.section>
+  );
+}
+
+function BottomStat({ label, target, suffix, color, divider }: { label: string; target: number; suffix: string; color: string; divider: boolean }) {
+  const value = useCountUp(target);
+
+  return (
+    <div className={["flex flex-col items-center justify-center", divider ? "border-l border-white/[0.06]" : ""].join(" ")}>
+      <p className="font-heading text-lg font-bold leading-none" style={{ color }}>
+        {value.toLocaleString("en-US")}{suffix}
+      </p>
+      <p className="mt-2 font-body text-[8px] uppercase tracking-[0.1em] text-[#6B7280]">{label}</p>
+    </div>
   );
 }
