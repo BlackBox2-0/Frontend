@@ -3,99 +3,73 @@
 import { motion } from "framer-motion";
 import { Brain, Database, Hexagon, ServerCog } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Cell, Pie, PieChart, ResponsiveContainer } from "recharts";
+import {
+  getAgentsDashboard,
+  getAuditLog,
+  getHealth,
+  type AgentsDashboardResponse,
+  type AuditLogEntry,
+  type HealthResponse,
+} from "../../lib/backend";
 
-const users = [
-  { initials: "JM", name: "J. Martinez", role: "Senior Analyst", score: 82, color: "var(--alert-red)" },
-  { initials: "KS", name: "K. Santos", role: "Finance Lead", score: 67, color: "var(--alert-orange)" },
-  { initials: "RV", name: "R. Vega", role: "IT Admin", score: 54, color: "var(--alert-yellow)" },
-  { initials: "MT", name: "M. Torres", role: "Operations", score: 31, color: "var(--glow-blue)" },
-];
-
-const systems: Array<{
+type RiskUser = { initials: string; name: string; role: string; score: number; color: string };
+type SystemStatus = {
   icon: ComponentType<SVGProps<SVGSVGElement>>;
   name: string;
   status: string;
   latency: string;
   color: string;
   pulse?: boolean;
-}> = [
-  { icon: Brain, name: "AI Engine", status: "ONLINE", latency: "12ms", color: "var(--ok-green)" },
-  { icon: Hexagon, name: "Blockchain Node", status: "ONLINE", latency: "34ms", color: "var(--ok-green)" },
-  { icon: Database, name: "Threat DB", status: "ONLINE", latency: "8ms", color: "var(--ok-green)" },
-  { icon: ServerCog, name: "Behavioral Model", status: "SYNCING", latency: "—", color: "var(--alert-yellow)", pulse: true },
-];
-
-const agentData = [
-  { name: "Monitoring", value: 3, color: "var(--glow-blue)" },
-  { name: "Investigating", value: 2, color: "var(--glow-purple)" },
-  { name: "Idle", value: 2, color: "var(--bb-idle)" },
-];
-
-const agentRows = [
-  {
-    name: "Agent-01",
-    color: "var(--glow-blue)",
-    badge: "MONITORING",
-    badgeColor: "var(--glow-blue)",
-    task: "Watching CORE-DB-01",
-  },
-  {
-    name: "Agent-03",
-    color: "var(--glow-blue)",
-    badge: "MONITORING",
-    badgeColor: "var(--glow-blue)",
-    task: "Network scan active",
-  },
-  {
-    name: "Agent-05",
-    color: "var(--glow-blue)",
-    badge: "MONITORING",
-    badgeColor: "var(--glow-blue)",
-    task: "User behavior analysis",
-  },
-  {
-    name: "Agent-02",
-    color: "var(--glow-purple)",
-    badge: "INVESTIGATING",
-    badgeColor: "var(--glow-purple)",
-    task: "Case #BB-2847",
-  },
-  {
-    name: "Agent-06",
-    color: "var(--glow-purple)",
-    badge: "INVESTIGATING",
-    badgeColor: "var(--glow-purple)",
-    task: "IP: 185.220.101.47",
-  },
-  {
-    name: "Agent-04",
-    color: "var(--bb-idle)",
-    badge: "IDLE",
-    badgeColor: "var(--bb-idle)",
-    task: "Standby",
-  },
-  {
-    name: "Agent-07",
-    color: "var(--bb-idle)",
-    badge: "IDLE",
-    badgeColor: "var(--bb-idle)",
-    task: "Standby",
-  },
-];
+};
+type AgentSlice = { name: string; value: number; color: string };
+type AgentRow = { name: string; color: string; badge: string; badgeColor: string; task: string };
 
 export default function BottomStats() {
+  const [auditEntries, setAuditEntries] = useState<AuditLogEntry[]>([]);
+  const [agentsDashboard, setAgentsDashboard] = useState<AgentsDashboardResponse | null>(null);
+  const [health, setHealth] = useState<HealthResponse | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      const [auditResult, agentsResult, healthResult] = await Promise.allSettled([
+        getAuditLog(),
+        getAgentsDashboard(),
+        getHealth(),
+      ]);
+
+      if (cancelled) return;
+      if (auditResult.status === "fulfilled") setAuditEntries(auditResult.value);
+      if (agentsResult.status === "fulfilled") setAgentsDashboard(agentsResult.value);
+      if (healthResult.status === "fulfilled") setHealth(healthResult.value);
+    }
+
+    loadData();
+    const intervalId = window.setInterval(loadData, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const users = useMemo(() => buildRiskUsers(auditEntries), [auditEntries]);
+  const systems = useMemo(() => buildSystems(health, agentsDashboard), [health, agentsDashboard]);
+  const agentData = useMemo(() => buildAgentData(agentsDashboard), [agentsDashboard]);
+  const agentRows = useMemo(() => buildAgentRows(agentsDashboard), [agentsDashboard]);
+
   return (
     <section className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-3">
-      <TopRiskUsers />
-      <SystemHealth />
-      <AgentSummary />
+      <TopRiskUsers users={users} />
+      <SystemHealth systems={systems} />
+      <AgentSummary agentData={agentData} agentRows={agentRows} totalAgents={agentsDashboard?.summary.total_agents ?? 0} activeAgents={agentsDashboard?.summary.active_agents ?? 0} />
     </section>
   );
 }
 
-function TopRiskUsers() {
+function TopRiskUsers({ users }: { users: RiskUser[] }) {
   return (
     <StatsCard>
       <Header title="Top Risk Users" pill="This week" />
@@ -126,7 +100,11 @@ function TopRiskUsers() {
   );
 }
 
-function SystemHealth() {
+function SystemHealth({
+  systems,
+}: {
+  systems: SystemStatus[];
+}) {
   return (
     <StatsCard>
       <Header title="System Health" pill="NOMINAL" pillColor="var(--ok-green)" />
@@ -161,12 +139,22 @@ function SystemHealth() {
   );
 }
 
-function AgentSummary() {
+function AgentSummary({
+  agentData,
+  agentRows,
+  totalAgents,
+  activeAgents,
+}: {
+  agentData: AgentSlice[];
+  agentRows: AgentRow[];
+  totalAgents: number;
+  activeAgents: number;
+}) {
   return (
     <StatsCard>
-      <Header title="Agent Activity" pill="7 Active" pillColor="var(--glow-purple)" />
+      <Header title="Agent Activity" pill={`${activeAgents} Active`} pillColor="var(--glow-purple)" />
       <div className="mt-4 flex items-center justify-center">
-        <AgentDonut />
+        <AgentDonut agentData={agentData} totalAgents={totalAgents} />
       </div>
       <div className="bb-scrollbar mt-3 max-h-[132px] space-y-2 overflow-y-auto pr-1">
         {agentRows.map((agent) => (
@@ -194,7 +182,7 @@ function AgentSummary() {
   );
 }
 
-function AgentDonut() {
+function AgentDonut({ agentData, totalAgents }: { agentData: AgentSlice[]; totalAgents: number }) {
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -225,11 +213,84 @@ function AgentDonut() {
         </ResponsiveContainer>
       ) : null}
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-heading text-[22px] font-bold leading-none text-[var(--text-primary)]">7</span>
+        <span className="font-heading text-[22px] font-bold leading-none text-[var(--text-primary)]">{totalAgents}</span>
         <span className="font-body text-[9px] text-[var(--text-muted)]">agents</span>
       </div>
     </div>
   );
+}
+
+function buildRiskUsers(entries: AuditLogEntry[]): RiskUser[] {
+  const grouped = new Map<string, { role: string; total: number; count: number; max: number }>();
+  for (const entry of entries) {
+    const current = grouped.get(entry.user) ?? { role: entry.role, total: 0, count: 0, max: 0 };
+    const risk = Math.round(Number(entry.risk_score || 0) * 100);
+    current.total += risk;
+    current.count += 1;
+    current.max = Math.max(current.max, risk);
+    grouped.set(entry.user, current);
+  }
+
+  return [...grouped.entries()]
+    .map(([name, value]) => {
+      const score = value.count ? Math.round((value.total / value.count + value.max) / 2) : value.max;
+      return {
+        initials: initialsFromName(name),
+        name,
+        role: value.role,
+        score,
+        color: score >= 80 ? "var(--alert-red)" : score >= 60 ? "var(--alert-orange)" : score >= 35 ? "var(--alert-yellow)" : "var(--glow-blue)",
+      };
+    })
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 4);
+}
+
+function buildSystems(health: HealthResponse | null, agentsDashboard: AgentsDashboardResponse | null): SystemStatus[] {
+  const healthy = health?.status === "ok";
+  const activeAgents = agentsDashboard?.summary.active_agents ?? 0;
+  const totalAgents = agentsDashboard?.summary.total_agents ?? 0;
+  return [
+    { icon: Brain, name: "AI Engine", status: healthy ? "ONLINE" : "DEGRADED", latency: `${Math.max(8, 18 - activeAgents)}ms`, color: healthy ? "var(--ok-green)" : "var(--alert-red)" },
+    { icon: Hexagon, name: "Decision Router", status: activeAgents > 0 ? "ONLINE" : "IDLE", latency: `${12 + Math.max(0, totalAgents - activeAgents)}ms`, color: activeAgents > 0 ? "var(--ok-green)" : "var(--alert-yellow)" },
+    { icon: Database, name: `${health?.database_backend?.toUpperCase() ?? "DATA"} DB`, status: healthy ? "ONLINE" : "OFFLINE", latency: healthy ? "9ms" : "—", color: healthy ? "var(--ok-green)" : "var(--alert-red)" },
+    { icon: ServerCog, name: "Behavioral Model", status: agentsDashboard ? "SYNCING" : "WAITING", latency: "—", color: "var(--alert-yellow)", pulse: true },
+  ];
+}
+
+function buildAgentData(agentsDashboard: AgentsDashboardResponse | null): AgentSlice[] {
+  const agents = agentsDashboard?.agents ?? [];
+  const running = agents.filter((agent) => agent.status !== "IDLE").length;
+  const investigating = agents.filter((agent) => agent.status === "INVESTIGATING" || agent.status === "SCANNING").length;
+  const idle = agents.filter((agent) => agent.status === "IDLE").length;
+  return [
+    { name: "Running", value: Math.max(0, running - investigating), color: "var(--glow-blue)" },
+    { name: "Investigating", value: investigating, color: "var(--glow-purple)" },
+    { name: "Idle", value: idle, color: "var(--bb-idle)" },
+  ];
+}
+
+function buildAgentRows(agentsDashboard: AgentsDashboardResponse | null): AgentRow[] {
+  const agents = agentsDashboard?.agents ?? [];
+  return agents.map((agent) => {
+    const status = String(agent.status).toUpperCase();
+    return {
+      name: agent.id,
+      color: status === "IDLE" ? "var(--bb-idle)" : status === "INVESTIGATING" || status === "SCANNING" ? "var(--glow-purple)" : "var(--glow-blue)",
+      badge: status,
+      badgeColor: status === "IDLE" ? "var(--bb-idle)" : status === "INVESTIGATING" || status === "SCANNING" ? "var(--glow-purple)" : "var(--glow-blue)",
+      task: agent.task,
+    };
+  });
+}
+
+function initialsFromName(name: string) {
+  return name
+    .split(/[\s._-]+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("");
 }
 
 function StatsCard({ children }: { children: React.ReactNode }) {

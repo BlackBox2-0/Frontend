@@ -1,20 +1,36 @@
 "use client";
 
-const agents = [
-  { id: "Agent-01", role: "Threat Hunter", status: "INVESTIGATING", task: "Case #BB-2891", accuracy: "96.2%", color: "var(--alert-red)" },
-  { id: "Agent-02", role: "Network Watcher", status: "MONITORING", task: "Watching anomalous flows", accuracy: "98.4%", color: "var(--glow-blue)" },
-  { id: "Agent-03", role: "Behavioral Analyst", status: "SCANNING", task: "Scanning behavioral drift", accuracy: "94.7%", color: "var(--glow-violet)" },
-  { id: "Agent-04", role: "Data Guardian", status: "MONITORING", task: "Data access audit", accuracy: "97.9%", color: "var(--glow-cyan)" },
-  { id: "Agent-05", role: "Log Analyzer", status: "IDLE", task: "Standby queue clean", accuracy: "91.5%", color: "var(--bb-idle)" },
-  { id: "Agent-06", role: "Fraud Detector", status: "INVESTIGATING", task: "IP: 185.220.101.47", accuracy: "95.8%", color: "var(--alert-orange)" },
-  { id: "Agent-07", role: "Insider Threat", status: "SCANNING", task: "Privilege drift sweep", accuracy: "93.6%", color: "var(--glow-purple)" },
-  { id: "CORE", role: "BlackBooks AI Core", status: "CORE", task: "Coordinating active defense mesh", accuracy: "99.1%", color: "var(--glow-purple)" },
-];
+import type { AgentTestInput, BackendAgent } from "../../../app/lib/backend";
 
-export default function AgentGrid() {
+export default function AgentGrid({
+  agents,
+  loading = false,
+  runningAgentId,
+  onTest,
+}: {
+  agents: BackendAgent[];
+  loading?: boolean;
+  runningAgentId?: string | null;
+  onTest: (agentId: string, payload: AgentTestInput) => void;
+}) {
+  const placeholderAgents = Array.from({ length: 8 }, (_, index) => ({
+    id: `placeholder-${index + 1}`,
+    role: "Loading backend agent",
+    module: "backend",
+    endpoint: "/agents",
+    status: "SYNCING",
+    task: "Loading agent state from backend",
+    color: "var(--bb-idle)",
+    accuracy: "--",
+    accuracy_value: 0,
+    test_label: "Loading",
+  }));
+
+  const items = agents.length > 0 ? agents : placeholderAgents;
+
   return (
     <section className="mt-6 grid grid-cols-1 gap-4 lg:grid-cols-2 xl:grid-cols-4">
-      {agents.map((agent) => (
+      {items.map((agent) => (
         <article key={agent.id} className="bb-card p-5">
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -37,6 +53,21 @@ export default function AgentGrid() {
             <span className="font-mono text-xs text-[var(--text-secondary)]">{agent.accuracy}</span>
           </div>
           <p className="mt-4 min-h-10 font-mono text-[12px] leading-5 text-[var(--text-secondary)]">{agent.task}</p>
+          <div className="mt-4 flex items-center justify-between gap-3 border-t border-white/[0.06] pt-4">
+            <div className="min-w-0">
+              <p className="truncate font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
+                {agent.module}
+              </p>
+              <p className="truncate font-mono text-[10px] text-[var(--text-muted)]">{agent.endpoint}</p>
+            </div>
+            <button
+              type="button"
+              disabled
+              className="rounded-md border border-[var(--glow-purple)] px-3 py-1.5 font-body text-[11px] font-semibold text-[var(--glow-violet)] transition hover:bg-[rgba(123,47,255,0.1)] hover:shadow-[0_0_14px_rgba(123,47,255,0.24)] disabled:cursor-not-allowed disabled:border-white/[0.08] disabled:text-[var(--text-muted)] disabled:hover:bg-transparent disabled:hover:shadow-none"
+            >
+              Usa el formulario
+            </button>
+          </div>
         </article>
       ))}
     </section>

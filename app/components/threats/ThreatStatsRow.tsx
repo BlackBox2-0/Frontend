@@ -3,8 +3,9 @@
 import { motion } from "framer-motion";
 import { Clock, Search, ShieldAlert, ShieldCheck } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Line, LineChart, ResponsiveContainer } from "recharts";
+import { getAuditLog, getIncidentActions, type AuditLogEntry, type IncidentActionResult } from "../../lib/backend";
 
 type ThreatStat = {
   label: string;
@@ -19,49 +20,36 @@ type ThreatStat = {
   data: number[];
 };
 
-const stats: ThreatStat[] = [
-  {
-    label: "Threats Detected",
-    value: "847",
-    sub: "Today",
-    trend: "+124 vs yesterday",
-    icon: ShieldAlert,
-    tone: "var(--alert-red)",
-    data: [120, 145, 132, 167, 155, 178, 165, 190, 180, 210, 195, 220],
-  },
-  {
-    label: "Blocked Attacks",
-    value: "1,203",
-    sub: "Last 24h",
-    trend: "98.2% block rate",
-    icon: ShieldCheck,
-    tone: "var(--ok-green)",
-    valueTone: "var(--ok-green)",
-    data: [80, 95, 88, 102, 98, 110, 105, 118, 112, 125, 120, 130],
-  },
-  {
-    label: "Mean Detection",
-    value: "1.4",
-    unit: "min",
-    trend: "↓ 0.3min improved",
-    icon: Clock,
-    tone: "var(--glow-cyan)",
-    valueTone: "var(--glow-cyan)",
-    data: [3.2, 2.8, 2.5, 2.1, 1.9, 1.8, 1.7, 1.6, 1.5, 1.4],
-  },
-  {
-    label: "Investigations",
-    value: "23",
-    sub: "Active cases",
-    trend: "5 escalated",
-    icon: Search,
-    tone: "var(--glow-purple)",
-    trendTone: "var(--alert-orange)",
-    data: [8, 10, 12, 11, 14, 13, 16, 15, 18, 20, 21, 23],
-  },
-];
-
 export default function ThreatStatsRow() {
+  const [auditEntries, setAuditEntries] = useState<AuditLogEntry[]>([]);
+  const [incidentActions, setIncidentActions] = useState<IncidentActionResult[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      const [auditResult, actionsResult] = await Promise.allSettled([getAuditLog(), getIncidentActions()]);
+      if (cancelled) return;
+
+      if (auditResult.status === "fulfilled") {
+        setAuditEntries(auditResult.value);
+      }
+
+      if (actionsResult.status === "fulfilled") {
+        setIncidentActions(actionsResult.value);
+      }
+    }
+
+    loadData();
+    const intervalId = window.setInterval(loadData, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const stats = useMemo(() => buildThreatStats(auditEntries, incidentActions), [auditEntries, incidentActions]);
+
   return (
     <motion.section
       initial="hidden"
@@ -74,6 +62,77 @@ export default function ThreatStatsRow() {
       ))}
     </motion.section>
   );
+}
+
+function buildThreatStats(auditEntries: AuditLogEntry[], incidentActions: IncidentActionResult[]): ThreatStat[] {
+  const totalThreats = auditEntries.length;
+  const blockedByEngine = auditEntries.filter((entry) => String(entry.decision).toUpperCase() === "BLOCK").length;
+  const escalated = auditEntries.filter((entry) => String(entry.decision).toUpperCase() === "ESCALATE").length;
+  const avgRisk = totalThreats
+    ? auditEntries.reduce((sum, entry) => sum + Number(entry.risk_score || 0), 0) / totalThreats
+    : 0;
+
+  const approved = incidentActions.filter((action) => action.status === "APPROVED").length;
+  const blocked = incidentActions.filter((action) => action.status === "BLOCKED").length;
+  const pending = incidentActions.filter((action) => action.status === "PENDING_APPROVAL").length;
+  const assigned = incidentActions.filter((action) => action.status === "ASSIGNED").length;
+  const active = pending + assigned;
+  const totalIncidents = incidentActions.length;
+  const approvalRate = totalIncidents ? (approved / totalIncidents) * 100 : 0;
+  const blockRate = totalIncidents ? (blocked / totalIncidents) * 100 : 0;
+
+  const blockedTotal = blockedByEngine + blocked;
+  const decisionsClosed = approved + blocked;
+
+  return [
+    {
+      label: "Threats Detected",
+      value: totalThreats.toLocaleString(),
+      sub: "Audit events",
+      trend: `${escalated} escalated for approval`,
+      icon: ShieldAlert,
+      tone: "var(--alert-red)",
+      data: sparklineFromCounts(totalThreats, 12),
+    },
+    {
+      label: "Blocked Attacks",
+      value: blockedTotal.toLocaleString(),
+      sub: "Engine + human block",
+      trend: `${blockRate.toFixed(1)}% human block rate`,
+      icon: ShieldCheck,
+      tone: "var(--ok-green)",
+      valueTone: "var(--ok-green)",
+      data: sparklineFromCounts(blockedTotal, 12),
+    },
+    {
+      label: "Decision Closure",
+      value: approvalRate.toFixed(1),
+      unit: "%",
+      sub: `${decisionsClosed}/${totalIncidents} fully resolved`,
+      trend: `${approved} approved · ${blocked} blocked`,
+      icon: Clock,
+      tone: "var(--glow-cyan)",
+      valueTone: "var(--glow-cyan)",
+      data: sparklineFromCounts(Math.round(approvalRate), 10),
+    },
+    {
+      label: "Investigations",
+      value: active.toLocaleString(),
+      sub: "Open cases",
+      trend: `${pending} pending final approval · avg risk ${(avgRisk * 100).toFixed(0)}%`,
+      icon: Search,
+      tone: "var(--glow-purple)",
+      trendTone: "var(--alert-orange)",
+      data: sparklineFromCounts(active, 12),
+    },
+  ];
+}
+
+function sparklineFromCounts(latest: number, points: number) {
+  return Array.from({ length: points }, (_, index) => {
+    const base = Math.max(0, latest - (points - index - 1));
+    return Math.max(0, base);
+  });
 }
 
 function ThreatStatCard({ stat }: { stat: ThreatStat }) {

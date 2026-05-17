@@ -19,21 +19,20 @@ export default function BlockchainOperations() {
   }, []);
 
   return (
-    <div className="relative h-screen overflow-hidden bg-[var(--bg-deep)] text-white antialiased">
-      <CornerBrackets />
-      <header className="grid h-12 grid-cols-[1fr_auto_1fr] items-center border-b border-[rgba(123,47,255,0.2)] bg-[rgba(13,11,26,0.9)] px-4">
-        <div className="flex items-center gap-3">
-          <span className="font-heading text-sm font-extrabold text-[#7B2FFF]">◈ BLACKBOOKS</span>
-          <span className="font-body text-[10px] uppercase tracking-[0.2em] text-[#94A3B8]">BLOCKCHAIN OPERATIONS CENTER</span>
-        </div>
-        <time className="font-mono text-sm text-[#06B6D4]">{clock}</time>
-        <div className="flex items-center justify-end gap-3 font-mono text-[10px]">
+    <div className="flex h-[calc(100vh-64px)] flex-col bg-[var(--bg-deep)] text-white antialiased">
+      {/* Blockchain-specific status bar */}
+      <div className="flex h-10 shrink-0 items-center justify-between border-b border-[rgba(123,47,255,0.2)] bg-[rgba(13,11,26,0.85)] px-5">
+        <span className="font-body text-[10px] uppercase tracking-[0.18em] text-[#94A3B8]">
+          Blockchain Operations Center
+        </span>
+        <time className="font-mono text-[11px] text-[#06B6D4]">{clock}</time>
+        <div className="flex items-center gap-3 font-mono text-[10px]">
           <span className="text-[#22C55E]">● BLOCKCHAIN SYNCED</span>
           <span className="text-[#94A3B8]">BLOCK #4,891,234</span>
         </div>
-      </header>
+      </div>
 
-      <div className="grid h-[calc(100vh-48px)] grid-cols-1 overflow-y-auto lg:grid-cols-[25%_50%_25%] lg:overflow-hidden">
+      <div className="grid flex-1 grid-cols-1 overflow-y-auto lg:grid-cols-[25%_50%_25%] lg:overflow-hidden">
         <ChainStatsLeft />
         <BlockchainMap />
         <ChainActivityRight />
@@ -42,21 +41,3 @@ export default function BlockchainOperations() {
   );
 }
 
-function CornerBrackets() {
-  const corners = [
-    "left-3 top-3",
-    "right-3 top-3 rotate-90",
-    "bottom-3 left-3 -rotate-90",
-    "bottom-3 right-3 rotate-180",
-  ];
-
-  return (
-    <>
-      {corners.map((corner) => (
-        <svg key={corner} aria-hidden="true" className={`pointer-events-none absolute z-30 size-6 ${corner}`} viewBox="0 0 24 24">
-          <path d="M 2 22 L 2 2 L 22 2" fill="none" stroke="#7B2FFF" strokeOpacity="0.4" strokeWidth="1.5" />
-        </svg>
-      ))}
-    </>
-  );
-}

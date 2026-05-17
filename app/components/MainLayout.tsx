@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   Bell,
+  Building2,
   Brain,
   Cpu,
   FileChartColumn,
@@ -19,6 +20,7 @@ const navItems = [
   { label: "Dashboard", icon: Grid3X3, href: "/" },
   { label: "Threat Monitor", icon: ShieldAlert, href: "/threat-monitor" },
   { label: "AI Agents", icon: Cpu, href: "/ai-agents" },
+  { label: "Company", icon: Building2, href: "/company" },
   { label: "Behavioral Intel", icon: Brain, href: "/behavioral-intel" },
   { label: "Blockchain", icon: Link2, href: "/blockchain" },
   { label: "Reports", icon: FileChartColumn, href: "/reports" },
@@ -31,15 +33,7 @@ type MainLayoutProps = {
 export default function MainLayout({ children }: MainLayoutProps) {
   const pathname = usePathname();
   const currentPage = navItems.find((item) => item.href === pathname)?.label ?? "Dashboard";
-  const isFullscreenPage = pathname === "/blockchain";
-
-  if (isFullscreenPage) {
-    return (
-      <main className="h-screen overflow-hidden bg-[var(--bg-deep)] text-[var(--text-primary)]">
-        {children}
-      </main>
-    );
-  }
+  const isBlockchain = pathname === "/blockchain";
 
   return (
     <div className="min-h-screen bg-[var(--bg-base)] text-[var(--text-primary)]">
@@ -150,8 +144,8 @@ export default function MainLayout({ children }: MainLayoutProps) {
           </div>
         </header>
 
-        <main className="blackbooks-main relative h-screen overflow-y-auto pt-16">
-          <div className="relative z-10 p-6">{children}</div>
+        <main className={`blackbooks-main relative h-screen pt-16 ${isBlockchain ? "overflow-hidden" : "overflow-y-auto"}`}>
+          {isBlockchain ? children : <div className="relative z-10 p-6">{children}</div>}
         </main>
       </div>
     </div>

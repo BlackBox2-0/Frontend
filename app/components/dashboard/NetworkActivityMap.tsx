@@ -1,9 +1,10 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ComposableMap, Geographies, Geography, Line, Marker } from "react-simple-maps";
 import { blockchainNodes } from "../blockchain/blockchainData";
+import { getAuditLog, getIncidentSummary, type AuditLogEntry, type IncidentSummary } from "../../lib/backend";
 
 const geoUrl = "https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json";
 
@@ -18,12 +19,6 @@ const linePairs = [
   [9, 3],
 ];
 
-const stats = [
-  { label: "10 Global Nodes", color: "var(--glow-cyan)" },
-  { label: "2 Threat Origins", color: "var(--alert-red)" },
-  { label: "4 Live Routes", color: "var(--glow-purple)" },
-];
-
 type ActiveLine = {
   id: string;
   from: [number, number];
@@ -33,6 +28,26 @@ type ActiveLine = {
 
 export default function NetworkActivityMap() {
   const [activeLines, setActiveLines] = useState<ActiveLine[]>([]);
+  const [auditEntries, setAuditEntries] = useState<AuditLogEntry[]>([]);
+  const [incidentSummary, setIncidentSummary] = useState<IncidentSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      const [auditResult, summaryResult] = await Promise.allSettled([getAuditLog(), getIncidentSummary()]);
+      if (cancelled) return;
+      if (auditResult.status === "fulfilled") setAuditEntries(auditResult.value);
+      if (summaryResult.status === "fulfilled") setIncidentSummary(summaryResult.value);
+    }
+
+    loadData();
+    const intervalId = window.setInterval(loadData, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
 
   useEffect(() => {
     let index = 0;
@@ -57,6 +72,28 @@ export default function NetworkActivityMap() {
     return () => window.clearInterval(timer);
   }, []);
 
+  const stats = useMemo(() => {
+    const blocked = auditEntries.filter((entry) => String(entry.decision).toUpperCase() === "BLOCK").length;
+    const escalated = auditEntries.filter((entry) => String(entry.decision).toUpperCase() === "ESCALATE").length;
+    const threatOrigins = Math.max(1, Math.min(6, blocked + escalated));
+    const openRoutes = incidentSummary?.active ?? activeLines.length;
+
+    return [
+      { label: `${blockchainNodes.length} Monitored Regions`, color: "var(--glow-cyan)" },
+      { label: `${threatOrigins} Threat Origins`, color: "var(--alert-red)" },
+      { label: `${openRoutes} Suspicious Routes`, color: "var(--glow-purple)" },
+    ];
+  }, [activeLines.length, auditEntries, incidentSummary]);
+
+  const mapNodes = useMemo(
+    () =>
+      blockchainNodes.map((node) => ({
+        ...node,
+        label: labelForSecurityNode(node.id, node.type),
+      })),
+    [],
+  );
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 20 }}
@@ -66,15 +103,15 @@ export default function NetworkActivityMap() {
     >
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h2 className="font-body text-sm font-semibold text-[var(--text-primary)]">Network Activity Map</h2>
+          <h2 className="font-body text-sm font-semibold text-[var(--text-primary)]">Threat Route Map</h2>
           <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">
-            Blockchain node distribution · real-time
+            Global access paths, threat origins, and monitored enterprise systems
           </p>
         </div>
         <p className="font-mono text-[11px] text-[var(--text-muted)]">
           <span className="text-[var(--glow-cyan)]">SYNCED</span>
           <span className="px-2 text-[var(--text-dim)]">·</span>
-          <span className="text-[var(--alert-red)]">LIVE ROUTES</span>
+          <span className="text-[var(--alert-red)]">LIVE RISK ROUTES</span>
         </p>
       </div>
 
@@ -120,7 +157,7 @@ export default function NetworkActivityMap() {
             />
           ))}
 
-          {blockchainNodes.map((node) => (
+          {mapNodes.map((node) => (
             <Marker key={node.id} coordinates={node.coords}>
               {[12, 8].map((r, index) => (
                 <circle
@@ -168,4 +205,31 @@ export default function NetworkActivityMap() {
       </div>
     </motion.article>
   );
+}
+
+function labelForSecurityNode(id: number, type: string) {
+  switch (id) {
+    case 1:
+      return "SOC-HQ · Lima";
+    case 2:
+      return "AUTH-EDGE · Miami";
+    case 3:
+      return "IDENTITY-GW · London";
+    case 4:
+      return "FINANCE-DB · Frankfurt";
+    case 5:
+      return "AUDIT-STORE · Singapore";
+    case 6:
+      return "ARCHIVE-VAULT · Tokyo";
+    case 7:
+      return "THREAT-ORIGIN · Moscow";
+    case 8:
+      return "THREAT-ORIGIN · Beijing";
+    case 9:
+      return "HR-OPS · São Paulo";
+    case 10:
+      return "MONITOR-NODE · Lagos";
+    default:
+      return type === "threat" ? "THREAT-ORIGIN" : "ENTERPRISE-NODE";
+  }
 }

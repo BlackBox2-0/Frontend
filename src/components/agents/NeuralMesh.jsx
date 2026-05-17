@@ -1,7 +1,7 @@
 "use client";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 const REPULSION = 4000;
 const IDEAL_LENGTH = 150;
@@ -13,7 +13,7 @@ const MAX_SPEED = 2;
 const CANVAS_HEIGHT = 480;
 const BOUNDS_PADDING = 100;
 
-const agents = [
+const fallbackAgents = [
   { id: "Agent-01", role: "Threat Hunter", status: "investigating", mass: 2.5 },
   { id: "Agent-02", role: "Network Watcher", status: "monitoring", mass: 1.8 },
   { id: "Agent-03", role: "Behavioral Analyst", status: "scanning", mass: 2.0 },
@@ -56,7 +56,20 @@ const taskByStatus = {
   idle: "Standby queue clean",
 };
 
-const agentMetrics = {
+const FALLBACK_CANVAS_COLOR = "#7B2FFF";
+
+let colorParserContext = null;
+
+function getColorParserContext() {
+  if (colorParserContext) return colorParserContext;
+  if (typeof document === "undefined") return null;
+
+  const canvas = document.createElement("canvas");
+  colorParserContext = canvas.getContext("2d");
+  return colorParserContext;
+}
+
+const fallbackAgentMetrics = {
   "Agent-01": { accuracy: "96.2%", tasks: 47, uptime: "99.8%", response: "42ms", progress: 78 },
   "Agent-02": { accuracy: "98.4%", tasks: 63, uptime: "99.9%", response: "31ms", progress: 86 },
   "Agent-03": { accuracy: "94.7%", tasks: 38, uptime: "99.2%", response: "56ms", progress: 62 },
@@ -66,18 +79,6 @@ const agentMetrics = {
   "Agent-07": { accuracy: "93.6%", tasks: 33, uptime: "99.1%", response: "61ms", progress: 55 },
   CORE: { accuracy: "99.1%", tasks: 293, uptime: "100%", response: "18ms", progress: 92 },
 };
-
-const agentsById = new Map(
-  agents.map((agent, index) => [
-    agent.id,
-    {
-      ...agent,
-      color: statusColors[agent.status],
-      radius: getRadius(agent),
-      pulsePhase: index * 0.9,
-    },
-  ]),
-);
 
 function getRadius(node) {
   if (node.status === "core") return 36;
@@ -122,7 +123,7 @@ function makeBreathingMotion() {
   };
 }
 
-function makeNodes(width, height) {
+function makeNodes(width, height, agents) {
   const core = agents.find((agent) => agent.id === "CORE");
   const agentNodes = agents.filter((agent) => agent.id !== "CORE");
   const radius = Math.min(width, height) * 0.3;
@@ -190,14 +191,46 @@ function getBezierPoint(a, b, cpX, cpY, t) {
   };
 }
 
-function hexToRgba(hex, alpha) {
-  const r = parseInt(hex.slice(1, 3), 16);
-  const g = parseInt(hex.slice(3, 5), 16);
-  const b = parseInt(hex.slice(5, 7), 16);
-  return `rgba(${r},${g},${b},${alpha})`;
+function normalizeCanvasColor(input, fallback = FALLBACK_CANVAS_COLOR) {
+  const candidate = typeof input === "string" ? input.trim() : "";
+  const ctx = getColorParserContext();
+
+  if (!candidate) return fallback;
+  if (!ctx) return candidate.startsWith("#") ? candidate : fallback;
+
+  const sentinel = "__codex_invalid_color__";
+  ctx.fillStyle = sentinel;
+  ctx.fillStyle = candidate;
+
+  return ctx.fillStyle === sentinel ? fallback : ctx.fillStyle;
 }
 
-export default function NeuralMesh() {
+function colorToRgba(input, alpha, fallback = FALLBACK_CANVAS_COLOR) {
+  const normalized = normalizeCanvasColor(input, fallback);
+  const match = normalized.match(/rgba?\(([^)]+)\)/i);
+
+  if (!match) {
+    return `rgba(123,47,255,${alpha})`;
+  }
+
+  const parts = match[1]
+    .split(",")
+    .map((part) => part.trim())
+    .slice(0, 3)
+    .map((part) => Number.parseFloat(part));
+
+  if (!parts.every((value) => Number.isFinite(value))) {
+    return `rgba(123,47,255,${alpha})`;
+  }
+
+  const [r, g, b] = parts;
+  return `rgba(${Math.round(r)},${Math.round(g)},${Math.round(b)},${alpha})`;
+}
+
+/**
+ * @param {{ agents?: import("../../../app/lib/backend").BackendAgent[] }} props
+ */
+export default function NeuralMesh({ agents = [] }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const animationRef = useRef(null);
@@ -209,6 +242,49 @@ export default function NeuralMesh() {
   const [hoveredNode, setHoveredNode] = useState(null);
   const [selectedNode, setSelectedNode] = useState(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: CANVAS_HEIGHT });
+
+  const meshAgents = useMemo(() => {
+    const source = agents.length ? agents : fallbackAgents.map((agent, index) => ({
+      id: agent.id,
+      role: agent.role,
+      status: agent.status.toUpperCase(),
+      task: taskByStatus[agent.status],
+      accuracy: fallbackAgentMetrics[agent.id]?.accuracy ?? "95.0%",
+      accuracy_value: Number.parseFloat(fallbackAgentMetrics[agent.id]?.accuracy ?? "95"),
+      module: "mesh",
+      endpoint: "/agents",
+      color: statusColors[agent.status],
+    }));
+
+    return source.map((agent, index) => {
+      const normalizedStatus = normalizeStatus(agent.status, agent.id);
+      const accuracyValue =
+        typeof agent.accuracy_value === "number" && Number.isFinite(agent.accuracy_value)
+          ? agent.accuracy_value
+          : Number.parseFloat(String(agent.accuracy ?? "95").replace("%", ""));
+      return {
+        id: agent.id,
+        role: agent.role,
+        status: normalizedStatus,
+        task: agent.task || taskByStatus[normalizedStatus],
+        mass: agent.id === "CORE" ? 5 : normalizedStatus === "investigating" ? 2.2 : normalizedStatus === "monitoring" ? 1.8 : normalizedStatus === "scanning" ? 1.9 : 1.2,
+        fixed: agent.id === "CORE",
+        color: agent.color || statusColors[normalizedStatus],
+        radius: getRadius({ status: normalizedStatus }),
+        pulsePhase: index * 0.9,
+        accuracy: agent.accuracy || `${accuracyValue.toFixed(1)}%`,
+        tasksToday: Math.max(1, Math.round(accuracyValue / 2)),
+        uptime: `${Math.max(97, Math.min(100, accuracyValue + 1)).toFixed(1)}%`,
+        response: `${Math.max(18, Math.round(120 - accuracyValue))}ms`,
+        progress: Math.max(20, Math.min(98, Math.round(accuracyValue))),
+      };
+    });
+  }, [agents]);
+
+  const agentsById = useMemo(
+    () => new Map(meshAgents.map((agent) => [agent.id, agent])),
+    [meshAgents],
+  );
 
   const syncNodeMap = useCallback(() => {
     nodeMapRef.current = new Map(nodesRef.current.map((node) => [node.id, node]));
@@ -259,7 +335,7 @@ export default function NeuralMesh() {
   }, []);
 
   const connectedAgents = useCallback((nodeId) => {
-    const activeIds = new Set(agents.map((agent) => agent.id));
+    const activeIds = new Set(meshAgents.map((agent) => agent.id));
     const connected = new Set();
 
     edges.forEach((edge) => {
@@ -271,7 +347,7 @@ export default function NeuralMesh() {
       .filter((id) => activeIds.has(id))
       .map((id) => agentsById.get(id))
       .filter(Boolean);
-  }, []);
+  }, [agentsById, meshAgents]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -292,11 +368,12 @@ export default function NeuralMesh() {
       setDimensions({ width, height });
 
       if (!previousNodes.length) {
-        nodesRef.current = makeNodes(width, height);
+        nodesRef.current = makeNodes(width, height, meshAgents);
         resetPositions();
       } else {
         nodesRef.current = previousNodes.map((node) => ({
           ...node,
+          ...(agentsById.get(node.id) ?? {}),
           x: node.fixed ? width / 2 : node.x,
           y: node.fixed ? height / 2 : node.y,
           radius: getRadius(node),
@@ -312,7 +389,7 @@ export default function NeuralMesh() {
     resizeObserver.observe(container);
 
     return () => resizeObserver.disconnect();
-  }, [resetPositions, syncNodeMap]);
+  }, [agentsById, meshAgents, resetPositions, syncNodeMap]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -492,8 +569,23 @@ export default function NeuralMesh() {
 
         node.vx *= DAMPING;
         node.vy *= DAMPING;
+
+        // Recover from NaN (can occur if speed was 0 during cap calculation)
+        if (!isFinite(node.vx) || !isFinite(node.vy)) {
+          node.vx = 0;
+          node.vy = 0;
+        }
+
         node.x += node.vx;
         node.y += node.vy;
+
+        if (!isFinite(node.x) || !isFinite(node.y)) {
+          const { width: w, height: h } = dimensionsRef.current;
+          node.x = w / 2;
+          node.y = h / 2;
+          node.vx = 0;
+          node.vy = 0;
+        }
 
         if (node.x < BOUNDS_PADDING) {
           node.x = BOUNDS_PADDING;
@@ -551,9 +643,11 @@ export default function NeuralMesh() {
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
       const tension = dist / IDEAL_LENGTH;
       const alpha = 0.25;
+      const aColor = normalizeCanvasColor(a.color);
+      const bColor = normalizeCanvasColor(b.color);
       const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
-      gradient.addColorStop(0, hexToRgba(a.color, alpha));
-      gradient.addColorStop(1, hexToRgba(b.color, alpha));
+      gradient.addColorStop(0, colorToRgba(aColor, alpha));
+      gradient.addColorStop(1, colorToRgba(bColor, alpha));
 
       const midX = (a.x + b.x) / 2;
       const midY = (a.y + b.y) / 2;
@@ -573,32 +667,114 @@ export default function NeuralMesh() {
         const t = (Date.now() * 0.0005 + p * 0.5 + edgeIndex * 0.2) % 1;
         const point = getBezierPoint(a, b, cpX, cpY, t);
         const pulseRadius = 2 + tension * 0.5;
+        const pulseColor = normalizeCanvasColor(a.color);
 
         ctx.beginPath();
         ctx.arc(point.x, point.y, pulseRadius, 0, Math.PI * 2);
-        ctx.fillStyle = a.color;
+        ctx.fillStyle = pulseColor;
         ctx.shadowBlur = 8 + tension * 4;
-        ctx.shadowColor = a.color;
+        ctx.shadowColor = pulseColor;
         ctx.fill();
         ctx.shadowBlur = 0;
       }
     };
 
+    const drawNeuronDendrites = (node, displayRadius) => {
+      if (!isFinite(node.x) || !isFinite(node.y)) return;
+      const numDendrites = node.id === "CORE" ? 10 : 6;
+      const time = Date.now() * 0.001;
+      const seed = node.pulsePhase;
+      const nodeColor = normalizeCanvasColor(node.color);
+
+      for (let i = 0; i < numDendrites; i++) {
+        const baseAngle = seed + i * ((Math.PI * 2) / numDendrites);
+        const sway = Math.sin(time * 0.4 + i * 1.7 + seed) * 0.06;
+        const angle = baseAngle + sway;
+        const lenMult = 1.5 + 0.5 * Math.sin(seed * 3 + i * 2.3);
+        const dendriteLen = displayRadius * lenMult;
+
+        const sx = node.x + Math.cos(angle) * displayRadius * 0.85;
+        const sy = node.y + Math.sin(angle) * displayRadius * 0.85;
+        const ex = node.x + Math.cos(angle) * (displayRadius + dendriteLen);
+        const ey = node.y + Math.sin(angle) * (displayRadius + dendriteLen);
+
+        const perpAngle = angle + Math.PI / 2;
+        const curvature = dendriteLen * 0.18 * Math.sin(seed + i * 1.4);
+        const cpx = (sx + ex) / 2 + Math.cos(perpAngle) * curvature;
+        const cpy = (sy + ey) / 2 + Math.sin(perpAngle) * curvature;
+
+        const dendGrad = ctx.createLinearGradient(sx, sy, ex, ey);
+        dendGrad.addColorStop(0, colorToRgba(nodeColor, 0.33));
+        dendGrad.addColorStop(1, colorToRgba(nodeColor, 0.03));
+
+        ctx.beginPath();
+        ctx.moveTo(sx, sy);
+        ctx.quadraticCurveTo(cpx, cpy, ex, ey);
+        ctx.strokeStyle = dendGrad;
+        ctx.lineWidth = node.id === "CORE" ? 1.5 : 1;
+        ctx.stroke();
+
+        // Branch point at ~65% along the quadratic
+        const t = 0.65;
+        const bx = (1 - t) * (1 - t) * sx + 2 * (1 - t) * t * cpx + t * t * ex;
+        const by = (1 - t) * (1 - t) * sy + 2 * (1 - t) * t * cpy + t * t * ey;
+        const dtx = 2 * (1 - t) * (cpx - sx) + 2 * t * (ex - cpx);
+        const dty = 2 * (1 - t) * (cpy - sy) + 2 * t * (ey - cpy);
+        const tangentAngle = Math.atan2(dty, dtx);
+        const branchLen = dendriteLen * 0.38;
+
+        [-0.5, 0.5].forEach((branchOff) => {
+          const bAngle = tangentAngle + branchOff;
+          const bbx = bx + Math.cos(bAngle) * branchLen;
+          const bby = by + Math.sin(bAngle) * branchLen;
+
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(bbx, bby);
+          ctx.strokeStyle = colorToRgba(nodeColor, 0.16);
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+
+          ctx.beginPath();
+          ctx.arc(bbx, bby, 1.4, 0, Math.PI * 2);
+          ctx.fillStyle = colorToRgba(nodeColor, 0.33);
+          ctx.fill();
+        });
+
+        // Pulsing terminal bouton at dendrite tip
+        const boutonR = 2.2 + Math.sin(time * 2.5 + i * 1.1 + seed) * 0.9;
+        const boutonGrad = ctx.createRadialGradient(ex, ey, 0, ex, ey, boutonR * 2.5);
+        boutonGrad.addColorStop(0, colorToRgba(nodeColor, 0.8));
+        boutonGrad.addColorStop(0.5, colorToRgba(nodeColor, 0.33));
+        boutonGrad.addColorStop(1, colorToRgba(nodeColor, 0));
+        ctx.beginPath();
+        ctx.arc(ex, ey, boutonR, 0, Math.PI * 2);
+        ctx.fillStyle = boutonGrad;
+        ctx.fill();
+      }
+    };
+
     const drawNode = (node) => {
+      if (!isFinite(node.x) || !isFinite(node.y)) return;
+
       const hovered = node.id === hoverRef.current?.id;
-      const pulse = Math.sin(Date.now() * 0.002 + node.pulsePhase);
-      const speed = Math.sqrt(node.vx ** 2 + node.vy ** 2);
+      const pulse = Math.sin(Date.now() * 0.002 + (node.pulsePhase || 0));
+      const vx = isFinite(node.vx) ? node.vx : 0;
+      const vy = isFinite(node.vy) ? node.vy : 0;
+      const speed = Math.sqrt(vx ** 2 + vy ** 2);
       const energyPulse = Math.min(speed * 0.3, 4);
-      const displayRadius = node.radius + energyPulse;
+      const displayRadius = (node.radius || 14) + energyPulse;
       const auraRadius = displayRadius + 8 + pulse * 4;
+      const nodeColor = normalizeCanvasColor(node.color);
+
+      // Dendrites are decorative — render failure must not affect the node body
+      try { drawNeuronDendrites(node, displayRadius); } catch {}
 
       [0.04, 0.08, 0.12].forEach((opacity, i) => {
         const r = auraRadius - i * 4;
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
-        ctx.strokeStyle = `${node.color}${Math.round(opacity * 255)
-          .toString(16)
-          .padStart(2, "0")}`;
+        ctx.strokeStyle = colorToRgba(nodeColor, opacity);
         ctx.lineWidth = 1;
         ctx.stroke();
       });
@@ -611,15 +787,15 @@ export default function NeuralMesh() {
         node.y,
         displayRadius,
       );
-      gradient.addColorStop(0, `${node.color}FF`);
-      gradient.addColorStop(0.6, `${node.color}CC`);
-      gradient.addColorStop(1, `${node.color}88`);
+      gradient.addColorStop(0, colorToRgba(nodeColor, 1));
+      gradient.addColorStop(0.6, colorToRgba(nodeColor, 0.8));
+      gradient.addColorStop(1, colorToRgba(nodeColor, 0.53));
 
       ctx.beginPath();
       ctx.arc(node.x, node.y, displayRadius, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
       ctx.shadowBlur = (node.id === "CORE" ? 60 : hovered ? 40 : 20) + energyPulse * 3;
-      ctx.shadowColor = node.id === "CORE" ? "rgba(123,47,255,0.6)" : node.color;
+      ctx.shadowColor = node.id === "CORE" ? "rgba(123,47,255,0.6)" : nodeColor;
       ctx.fill();
       ctx.shadowBlur = 0;
 
@@ -667,23 +843,27 @@ export default function NeuralMesh() {
       ctx.textAlign = "center";
       ctx.fillText(node.id, node.x, node.y + displayRadius + 16);
 
-      ctx.fillStyle = node.color;
+      ctx.fillStyle = nodeColor;
       ctx.font = "10px 'Syne'";
       ctx.fillText(node.role, node.x, node.y + displayRadius + 28);
 
       const badgeText = node.status.toUpperCase();
       const badgeW = ctx.measureText(badgeText).width + 12;
-      ctx.fillStyle = `${node.color}25`;
+      ctx.fillStyle = colorToRgba(nodeColor, 0.15);
       ctx.beginPath();
       drawRoundRect(ctx, node.x - badgeW / 2, node.y + displayRadius + 32, badgeW, 14, 4);
       ctx.fill();
-      ctx.fillStyle = node.color;
+      ctx.fillStyle = nodeColor;
       ctx.font = "8px 'JetBrains Mono'";
       ctx.fillText(badgeText, node.x, node.y + displayRadius + 42);
     };
 
     const draw = () => {
+      animationRef.current = requestAnimationFrame(draw);
+
       const { width, height } = dimensionsRef.current;
+      if (!width || !height) return;
+
       const dpr = window.devicePixelRatio || 1;
 
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
@@ -703,7 +883,6 @@ export default function NeuralMesh() {
       }
 
       nodesRef.current.forEach(drawNode);
-      animationRef.current = requestAnimationFrame(draw);
     };
 
     animationRef.current = requestAnimationFrame(draw);
@@ -711,11 +890,24 @@ export default function NeuralMesh() {
     return () => {
       if (animationRef.current) cancelAnimationFrame(animationRef.current);
     };
-  }, []);
+  }, [agentsById, meshAgents]);
 
   const selectedLiveNode = selectedNode;
-  const selectedMetrics = selectedLiveNode ? agentMetrics[selectedLiveNode.id] : null;
-  const tooltipMetrics = hoveredNode ? agentMetrics[hoveredNode.id] : null;
+  const selectedMetrics = selectedLiveNode
+    ? {
+        accuracy: selectedLiveNode.accuracy,
+        tasks: selectedLiveNode.tasksToday,
+        uptime: selectedLiveNode.uptime,
+        response: selectedLiveNode.response,
+        progress: selectedLiveNode.progress,
+      }
+    : null;
+  const tooltipMetrics = hoveredNode
+    ? {
+        accuracy: hoveredNode.accuracy,
+        tasks: hoveredNode.tasksToday,
+      }
+    : null;
   const selectedConnections = selectedLiveNode ? connectedAgents(selectedLiveNode.id) : [];
 
   return (
@@ -744,15 +936,15 @@ export default function NeuralMesh() {
                 left: Math.min(hoveredNode.x + 20, Math.max(dimensions.width - 238, 12)),
                 top: Math.max(12, hoveredNode.y - 20),
                 background: "rgba(5,3,15,0.95)",
-                borderColor: `${hoveredNode.color}40`,
-                boxShadow: `0 0 20px ${hoveredNode.color}20`,
+                borderColor: colorToRgba(hoveredNode.color, 0.25),
+                boxShadow: `0 0 20px ${colorToRgba(hoveredNode.color, 0.12)}`,
               }}
             >
               <div className="font-bold text-white">{hoveredNode.id}</div>
-              <div style={{ color: hoveredNode.color }}>{hoveredNode.role}</div>
+              <div style={{ color: normalizeCanvasColor(hoveredNode.color) }}>{hoveredNode.role}</div>
               <div className="my-2 h-px bg-slate-700/70" />
               <div>Status: {hoveredNode.status.toUpperCase()}</div>
-              <div>Task: {taskByStatus[hoveredNode.status]}</div>
+              <div>Task: {hoveredNode.task}</div>
               <div>Accuracy: {tooltipMetrics.accuracy}</div>
               <div>Tasks today: {tooltipMetrics.tasks}</div>
             </motion.div>
@@ -768,85 +960,88 @@ export default function NeuralMesh() {
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="relative h-[480px] shrink-0 overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.2)] bg-[rgba(13,11,26,0.97)] p-5 shadow-[-18px_0_32px_rgba(2,1,8,0.22)] backdrop-blur-md"
+            className="flex h-[480px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.2)] bg-[rgba(13,11,26,0.97)] shadow-[-18px_0_32px_rgba(2,1,8,0.22)] backdrop-blur-md"
           >
-            <button
-              type="button"
-              aria-label="Close agent details"
-              onClick={() => setSelectedNode(null)}
-              className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-md border border-white/10 text-slate-400 transition hover:border-white/25 hover:text-white"
-            >
-              X
-            </button>
-
-            <header className="pr-8">
-              <div className="flex items-center gap-3">
-                <span
-                  className="size-4 rounded-full shadow-[0_0_16px_currentColor]"
-                  style={{ background: selectedLiveNode.color, color: selectedLiveNode.color }}
-                />
-                <h2 className="font-heading text-[20px] font-bold text-white">{selectedLiveNode.id}</h2>
-              </div>
-              <p className="mt-1 font-body text-[13px]" style={{ color: selectedLiveNode.color }}>
-                {selectedLiveNode.role}
-              </p>
-              <motion.span
-                animate={{ opacity: [0.55, 1, 0.55] }}
-                transition={{ duration: 1.8, repeat: Infinity }}
-                className="mt-3 inline-flex rounded border px-2 py-1 font-mono text-[9px] font-bold"
-                style={{ borderColor: `${selectedLiveNode.color}40`, color: selectedLiveNode.color }}
+            {/* Scrollable content area */}
+            <div className="relative min-h-0 flex-1 overflow-y-auto p-5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
+              <button
+                type="button"
+                aria-label="Close agent details"
+                onClick={() => setSelectedNode(null)}
+                className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-md border border-white/10 text-slate-400 transition hover:border-white/25 hover:text-white"
               >
-                {selectedLiveNode.status.toUpperCase()}
-              </motion.span>
-            </header>
+                X
+              </button>
 
-            <div className="mt-6 grid grid-cols-2 gap-3">
-              {[
-                ["Tasks Today", selectedMetrics.tasks],
-                ["Accuracy", selectedMetrics.accuracy],
-                ["Uptime", selectedMetrics.uptime],
-                ["Response Time", selectedMetrics.response],
-              ].map(([label, value]) => (
-                <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                  <div className="font-heading text-[22px] font-bold text-white">{value}</div>
-                  <div className="font-body text-[9px] uppercase text-slate-400">{label}</div>
+              <header className="pr-8">
+                <div className="flex items-center gap-3">
+                  <span
+                    className="size-4 rounded-full shadow-[0_0_16px_currentColor]"
+                    style={{ background: selectedLiveNode.color, color: selectedLiveNode.color }}
+                  />
+                  <h2 className="font-heading text-[20px] font-bold text-white">{selectedLiveNode.id}</h2>
                 </div>
-              ))}
-            </div>
+                <p className="mt-1 font-body text-[13px]" style={{ color: selectedLiveNode.color }}>
+                  {selectedLiveNode.role}
+                </p>
+                <motion.span
+                  animate={{ opacity: [0.55, 1, 0.55] }}
+                  transition={{ duration: 1.8, repeat: Infinity }}
+                  className="mt-3 inline-flex rounded border px-2 py-1 font-mono text-[9px] font-bold"
+                  style={{ borderColor: `${selectedLiveNode.color}40`, color: selectedLiveNode.color }}
+                >
+                  {selectedLiveNode.status.toUpperCase()}
+                </motion.span>
+              </header>
 
-            <section className="mt-6">
-              <div className="font-body text-[9px] uppercase text-slate-500">Current Task</div>
-              <p className="mt-2 font-mono text-[12px] leading-5 text-slate-300">{taskByStatus[selectedLiveNode.status]}</p>
-              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${selectedMetrics.progress}%` }}
-                  transition={{ duration: 0.5, ease: "easeOut" }}
-                  className="h-full rounded-full"
-                  style={{ background: selectedLiveNode.color, boxShadow: `0 0 14px ${selectedLiveNode.color}` }}
-                />
-              </div>
-            </section>
-
-            <section className="mt-6">
-              <div className="font-body text-[9px] uppercase text-slate-500">Connected To</div>
-              <div className="mt-3 flex flex-col gap-2">
-                {selectedConnections.map((agent) => (
-                  <div key={agent.id} className="flex items-center gap-2 font-mono text-[11px] text-slate-300">
-                    <span className="size-2 rounded-full" style={{ background: agent.color }} />
-                    {agent.id}
+              <div className="mt-6 grid grid-cols-2 gap-3">
+                {[
+                  ["Tasks Today", selectedMetrics.tasks],
+                  ["Accuracy", selectedMetrics.accuracy],
+                  ["Uptime", selectedMetrics.uptime],
+                  ["Response Time", selectedMetrics.response],
+                ].map(([label, value]) => (
+                  <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
+                    <div className="font-heading text-[22px] font-bold text-white">{value}</div>
+                    <div className="font-body text-[9px] uppercase text-slate-400">{label}</div>
                   </div>
                 ))}
               </div>
-            </section>
 
-            <div className="absolute bottom-5 left-5 right-5 flex flex-col gap-2">
+              <section className="mt-6">
+                <div className="font-body text-[9px] uppercase text-slate-500">Current Task</div>
+                <p className="mt-2 font-mono text-[12px] leading-5 text-slate-300">{selectedLiveNode.task}</p>
+                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${selectedMetrics.progress}%` }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="h-full rounded-full"
+                    style={{ background: selectedLiveNode.color, boxShadow: `0 0 14px ${selectedLiveNode.color}` }}
+                  />
+                </div>
+              </section>
+
+              <section className="mt-6">
+                <div className="font-body text-[9px] uppercase text-slate-500">Connected To</div>
+                <div className="mt-3 flex flex-col gap-2">
+                  {selectedConnections.map((agent) => (
+                    <div key={agent.id} className="flex items-center gap-2 font-mono text-[11px] text-slate-300">
+                      <span className="size-2 rounded-full" style={{ background: agent.color }} />
+                      {agent.id}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            </div>
+
+            {/* Buttons always pinned at bottom, never overlapping */}
+            <div className="shrink-0 border-t border-white/[0.06] p-4 flex flex-col gap-2">
               {["View Full Logs", "Assign New Task", "Pause Agent"].map((label) => (
                 <button
                   key={label}
                   type="button"
                   className="rounded-md border border-white/10 px-3 py-2 text-left font-body text-[12px] text-slate-300 transition hover:bg-white/[0.04]"
-                  style={{ "--hover-color": selectedLiveNode.color }}
                   onMouseEnter={(event) => {
                     event.currentTarget.style.borderColor = `${selectedLiveNode.color}70`;
                     event.currentTarget.style.color = selectedLiveNode.color;
@@ -865,4 +1060,14 @@ export default function NeuralMesh() {
       </AnimatePresence>
     </div>
   );
+}
+
+function normalizeStatus(status, id) {
+  if (id === "CORE") return "core";
+  const value = String(status || "").toUpperCase();
+  if (value === "INVESTIGATING" || value === "ANALYZING" || value === "ENFORCING") return "investigating";
+  if (value === "MONITORING" || value === "WATCHING") return "monitoring";
+  if (value === "SCANNING") return "scanning";
+  if (value === "CORE") return "core";
+  return "idle";
 }

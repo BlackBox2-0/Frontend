@@ -1,7 +1,19 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
+import {
+  approveIncident,
+  type AuditLogEntry,
+  type IncidentActionResult,
+  type IncidentActionInput,
+  escalateIncident,
+  getAuditLog,
+  getIncidentActions,
+  investigateIncident,
+  rejectIncident,
+} from "../../lib/backend";
 import ThreatFeedItem, { type ThreatFeedItemData } from "./ThreatFeedItem";
 
 const criticalBg = "rgba(239,68,68,0.15)";
@@ -11,146 +23,117 @@ const lowBg = "rgba(123,47,255,0.15)";
 const infoBg = "rgba(148,163,184,0.15)";
 const resolvedBg = "rgba(34,197,94,0.15)";
 
-const threats: ThreatFeedItemData[] = [
-  {
-    severity: "CRITICAL",
-    severityColor: "var(--alert-red)",
-    badgeBg: criticalBg,
-    type: "SQL Injection",
-    typeColor: "var(--glow-violet)",
-    time: "2 min ago",
-    title: "SQL injection attempt on authentication endpoint",
-    meta: ["IP: 185.220.101.47", "User: anonymous", "System: AUTH-API-01", "Country: RU"],
-    confidence: 96,
-    actions: ["Investigate", "Block"],
-  },
-  {
-    severity: "CRITICAL",
-    severityColor: "var(--alert-red)",
-    badgeBg: criticalBg,
-    type: "Brute Force",
-    typeColor: "var(--glow-violet)",
-    time: "5 min ago",
-    title: "Repeated failed login attempts - account lockout triggered",
-    meta: ["IP: 203.0.113.42", "User: admin", "Attempts: 847", "Country: CN"],
-    confidence: 99,
-    actions: ["Investigate", "Block IP"],
-  },
-  {
-    severity: "HIGH",
-    severityColor: "var(--alert-orange)",
-    badgeBg: highBg,
-    type: "Data Exfiltration",
-    typeColor: "var(--glow-violet)",
-    time: "12 min ago",
-    title: "Unusual large file transfer to external endpoint",
-    meta: ["User: k.santos", "Size: 2.3GB", "Dest: 104.21.45.67", "Dept: Finance"],
-    confidence: 87,
-  },
-  {
-    severity: "HIGH",
-    severityColor: "var(--alert-orange)",
-    badgeBg: highBg,
-    type: "Privilege Escalation",
-    typeColor: "var(--glow-violet)",
-    time: "18 min ago",
-    title: "User attempted to access restricted admin panel",
-    meta: ["User: r.vega", "System: ADMIN-PANEL", "Role: IT Admin", "IP: 10.0.1.45"],
-    confidence: 82,
-  },
-  {
-    severity: "HIGH",
-    severityColor: "var(--alert-orange)",
-    badgeBg: highBg,
-    type: "Anomalous Access",
-    typeColor: "var(--glow-violet)",
-    time: "31 min ago",
-    title: "Resource access outside business hours detected",
-    meta: ["User: m.torres", "Time: 02:47 AM", "System: CORE-DB-01", "Day: Sunday"],
-    confidence: 78,
-  },
-  {
-    severity: "MEDIUM",
-    severityColor: "var(--alert-yellow)",
-    badgeBg: mediumBg,
-    type: "Policy Violation",
-    typeColor: "var(--glow-violet)",
-    time: "45 min ago",
-    title: "Sensitive document shared via unauthorized channel",
-    meta: ["User: j.martinez", "File: Q1-report.xlsx", "Channel: Personal email"],
-    confidence: 71,
-  },
-  {
-    severity: "MEDIUM",
-    severityColor: "var(--alert-yellow)",
-    badgeBg: mediumBg,
-    type: "Reconnaissance",
-    typeColor: "var(--glow-violet)",
-    time: "1h ago",
-    title: "Port scanning activity detected from internal host",
-    meta: ["IP: 10.0.2.88", "Ports: 1-65535", "Protocol: TCP", "Duration: 23min"],
-    confidence: 65,
-  },
-  {
-    severity: "MEDIUM",
-    severityColor: "var(--alert-yellow)",
-    badgeBg: mediumBg,
-    type: "Credential Stuffing",
-    typeColor: "var(--glow-violet)",
-    time: "1h 20min ago",
-    title: "Multiple accounts targeted with leaked credentials",
-    meta: ["Accounts: 34", "Success: 2", "Source: TOR exit node", "Country: XX"],
-    confidence: 74,
-  },
-  {
-    severity: "LOW",
-    severityColor: "var(--glow-blue)",
-    badgeBg: lowBg,
-    type: "Config Change",
-    typeColor: "var(--glow-violet)",
-    time: "2h ago",
-    title: "Firewall rule modified without change ticket",
-    meta: ["User: a.reyes", "System: FW-CORE-01", "Rule: #4471", "Change: Allow"],
-    confidence: 55,
-  },
-  {
-    severity: "LOW",
-    severityColor: "var(--glow-blue)",
-    badgeBg: lowBg,
-    type: "Behavioral",
-    typeColor: "var(--glow-violet)",
-    time: "2h 30min ago",
-    title: "Employee productivity pattern deviation detected",
-    meta: ["User: p.garcia", "Score delta: +22pts", "Agent: Agent-03", "Dept: HR"],
-    confidence: 48,
-  },
-  {
-    severity: "INFO",
-    severityColor: "var(--text-muted)",
-    badgeBg: infoBg,
-    type: "System Event",
-    typeColor: "var(--glow-violet)",
-    time: "3h ago",
-    title: "New device registered on corporate network",
-    meta: ["Device: MacBook Pro", "MAC: 3C:22:FB:XX:XX", "User: new.hire", "VLAN: 10"],
-    confidence: 30,
-  },
-  {
-    severity: "RESOLVED",
-    severityColor: "var(--ok-green)",
-    badgeBg: resolvedBg,
-    type: "Malware",
-    typeColor: "var(--glow-violet)",
-    time: "4h ago",
-    title: "Malicious script quarantined and removed successfully",
-    meta: ["File: invoice.exe", "Hash: a3f2...", "System: WS-023", "Action: Quarantine"],
-    confidence: 100,
-  },
-];
-
 const selects = ["All Severity", "All Types", "Last 24h"];
 
 export default function ThreatFeed() {
+  const [auditEntries, setAuditEntries] = useState<AuditLogEntry[]>([]);
+  const [incidentActions, setIncidentActions] = useState<IncidentActionResult[]>([]);
+  const [actionResults, setActionResults] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      const [auditResult, actionsResult] = await Promise.allSettled([getAuditLog(), getIncidentActions()]);
+      if (cancelled) return;
+
+      if (auditResult.status === "fulfilled") {
+        setAuditEntries(auditResult.value);
+      }
+
+      if (actionsResult.status === "fulfilled") {
+        setIncidentActions(actionsResult.value);
+      }
+    }
+
+    loadData();
+    const intervalId = window.setInterval(loadData, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const backendThreats = useMemo(() => auditEntries.slice(0, 12).map(mapAuditEntryToThreatFeedItem), [auditEntries]);
+  const resolvedKeys = useMemo(() => {
+    return new Set(
+      incidentActions
+        .filter((action) => action.status === "APPROVED" || action.status === "BLOCKED")
+        .map((action) => incidentKey(action.incident_title, action.affected_user)),
+    );
+  }, [incidentActions]);
+  const threats = backendThreats
+    .map((item, index) => ({
+      ...item,
+      id: item.id ?? `${item.type}-${index}`,
+      actionResult: actionResults[item.id ?? `${item.type}-${index}`],
+    }))
+    .filter((item) => item.title.trim().length > 0)
+    .filter((item) => !resolvedKeys.has(incidentKey(item.title, item.affectedUser)));
+
+  async function handleThreatAction(item: ThreatFeedItemData, action: string) {
+    if (!item.affectedUser || !item.department || !item.resource) {
+      return;
+    }
+
+    const payload: IncidentActionInput = {
+      incident_title: item.title,
+      incident_type: item.type,
+      affected_user: item.affectedUser,
+      department: item.department,
+      resource: item.resource,
+      severity: item.severity,
+      requested_by: "Alejandro Reyes",
+    };
+    const existingCase = incidentActions.find(
+      (entry) =>
+        entry.status !== "APPROVED" &&
+        entry.status !== "BLOCKED" &&
+        incidentKey(entry.incident_title, entry.affected_user) === incidentKey(item.title, item.affectedUser),
+    );
+
+    if (action.toUpperCase().includes("INVESTIGATE")) {
+      const result = existingCase ?? (await investigateIncident(payload));
+      setActionResults((current) => ({
+        ...current,
+        [item.id ?? item.title]: `Investigación asignada a ${result.assigned_to?.name ?? "Security"} (${result.assigned_to?.title ?? "Analyst"}).`,
+      }));
+      setIncidentActions((current) => [result, ...current.filter((entry) => entry.id !== result.id)]);
+      return;
+    }
+
+    if (action.toUpperCase() === "ALLOW") {
+      const draft = existingCase ?? (await investigateIncident(payload));
+      const result = await approveIncident(draft.id, { approver_username: draft.assigned_to?.username });
+      setActionResults((current) => ({
+        ...current,
+        [item.id ?? item.title]: `Aceptado por ${result.resolved_by?.name ?? result.assigned_to?.name ?? "Security"}.`,
+      }));
+      setIncidentActions((current) => [result, ...current.filter((entry) => entry.id !== result.id)]);
+      return;
+    }
+
+    if (action.toUpperCase().includes("ESCALATE")) {
+      const result = existingCase ?? (await escalateIncident(payload));
+      setActionResults((current) => ({
+        ...current,
+        [item.id ?? item.title]: `Escalado a ${result.escalation_chain.map((user) => user.name).join(" -> ")}.`,
+      }));
+      setIncidentActions((current) => [result, ...current.filter((entry) => entry.id !== result.id)]);
+      return;
+    }
+
+    if (action.toUpperCase().includes("BLOCK")) {
+      const draft = existingCase ?? (await escalateIncident(payload));
+      const result = await rejectIncident(draft.id, { approver_username: draft.assigned_to?.username });
+      setActionResults((current) => ({
+        ...current,
+        [item.id ?? item.title]: `Bloqueado por ${result.resolved_by?.name ?? draft.assigned_to?.name ?? "Security"}.`,
+      }));
+      setIncidentActions((current) => [result, ...current.filter((entry) => entry.id !== result.id)]);
+    }
+  }
+
   return (
     <motion.article
       initial={{ opacity: 0, y: 24 }}
@@ -166,7 +149,7 @@ export default function ThreatFeed() {
             LIVE
           </span>
           <span className="rounded-full border border-white/[0.06] bg-white/[0.04] px-3 py-1 font-mono text-[10px] text-[var(--text-muted)]">
-            847 events
+            {threats.length} events
           </span>
         </div>
       </div>
@@ -205,9 +188,85 @@ export default function ThreatFeed() {
         className="bb-scrollbar mt-5 max-h-[520px] space-y-2 overflow-y-auto pr-1"
       >
         {threats.map((item) => (
-          <ThreatFeedItem key={`${item.time}-${item.title}`} item={item} />
+          <ThreatFeedItem key={item.id} item={item} onAction={handleThreatAction} />
         ))}
       </motion.div>
     </motion.article>
   );
+}
+
+function mapAuditEntryToThreatFeedItem(entry: AuditLogEntry): ThreatFeedItemData {
+  const decision = String(entry.decision).toUpperCase();
+  const aiRecommendation = String(entry.model_recommendation ?? entry.analyst_decision ?? decision).toUpperCase();
+  const severity = severityFromDecisionAndRisk(decision, entry.risk_score);
+  const palette = paletteBySeverity(severity);
+  const type = String(entry.action).replaceAll("_", " ");
+
+  return {
+    id: entry.id,
+    severity,
+    severityColor: palette.severityColor,
+    badgeBg: palette.badgeBg,
+    type,
+    typeColor: "var(--glow-violet)",
+    time: formatTimeAgo(entry.timestamp),
+    title: entry.reasoning,
+    meta: [
+      `User: ${entry.user}`,
+      `Role: ${entry.role}`,
+      `Resource: ${entry.resource}`,
+      `Risk: ${Math.round(entry.risk_score * 100)}%`,
+    ],
+    confidence: Math.max(20, Math.min(100, Math.round(entry.risk_score * 100))),
+    actions: decision === "BLOCK" ? ["Investigate", "Block"] : ["Investigate", decision],
+    affectedUser: entry.user,
+    department: entry.department,
+    resource: entry.resource,
+    aiRecommendation,
+    finalDecision: decision,
+    decisionSource: entry.final_decision_source,
+    policyRuleMatched: entry.final_decision_source === "policy" ? entry.policy_rule_matched ?? null : null,
+    policyVersion: entry.policy_version ?? null,
+  };
+}
+
+function severityFromDecisionAndRisk(decision: string, riskScore: number) {
+  if (decision === "BLOCK" || riskScore >= 0.8) return "CRITICAL";
+  if (decision === "ESCALATE" || riskScore >= 0.6) return "HIGH";
+  if (riskScore >= 0.35) return "MEDIUM";
+  if (riskScore > 0) return "LOW";
+  return "INFO";
+}
+
+function paletteBySeverity(severity: string) {
+  switch (severity) {
+    case "CRITICAL":
+      return { severityColor: "var(--alert-red)", badgeBg: criticalBg };
+    case "HIGH":
+      return { severityColor: "var(--alert-orange)", badgeBg: highBg };
+    case "MEDIUM":
+      return { severityColor: "var(--alert-yellow)", badgeBg: mediumBg };
+    case "LOW":
+      return { severityColor: "var(--glow-blue)", badgeBg: lowBg };
+    case "RESOLVED":
+      return { severityColor: "var(--ok-green)", badgeBg: resolvedBg };
+    default:
+      return { severityColor: "var(--text-muted)", badgeBg: infoBg };
+  }
+}
+
+function formatTimeAgo(timestamp: string) {
+  const date = new Date(timestamp);
+  const diffMs = Date.now() - date.getTime();
+  const diffMinutes = Math.max(1, Math.floor(diffMs / 60000));
+
+  if (diffMinutes < 60) return `${diffMinutes} min ago`;
+  const diffHours = Math.floor(diffMinutes / 60);
+  if (diffHours < 24) return `${diffHours}h ago`;
+  const diffDays = Math.floor(diffHours / 24);
+  return `${diffDays}d ago`;
+}
+
+function incidentKey(title?: string, affectedUser?: string) {
+  return [title ?? "", affectedUser ?? ""].join("::").toLowerCase();
 }

@@ -1,7 +1,9 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useEffect, useState } from "react";
 import useCountUp from "../../hooks/useCountUp";
+import { getTransactions, getStats, type BlockchainTransaction, type BackendStats } from "../../lib/backend";
 import LiveTransactionFeed, { SectionLabel } from "./LiveTransactionFeed";
 
 const gauges = [
@@ -10,27 +12,50 @@ const gauges = [
   { label: "VALIDITY", value: 99, color: "#7B2FFF" },
 ];
 
-const blockStats = [
-  { label: "TOTAL BLOCKS", value: "4,891,234", count: 4891234, color: "#FFFFFF" },
-  { label: "TRANSACTIONS", value: "2.4M", count: 2400000, color: "#06B6D4" },
-  { label: "NODES ONLINE", value: "847", count: 847, color: "#22C55E" },
-  { label: "AVG BLOCK TIME", value: "2.3s", count: 23, color: "#7B2FFF" },
-];
+function decisionColor(decision: string): string {
+  if (decision === "BLOCK") return "#EF4444";
+  if (decision === "ESCALATE") return "#F59E0B";
+  return "#22C55E";
+}
 
-const auditEntries = [
-  "21:03:44 · Case closed · Agent-01 · 0x3f2a",
-  "21:01:12 · Alert raised · System · 0x7c1e",
-  "20:58:33 · Access logged · j.martinez · 0xa4f8",
-  "20:55:19 · Policy updated · Admin · 0x2b9d",
-];
+function formatAuditTime(iso: string): string {
+  try {
+    return new Date(iso).toLocaleTimeString("en-US", { hour12: false, hour: "2-digit", minute: "2-digit", second: "2-digit" });
+  } catch {
+    return iso.slice(11, 19) || iso;
+  }
+}
 
 export default function ChainStatsLeft() {
+  const [auditEntries, setAuditEntries] = useState<BlockchainTransaction[]>([]);
+  const [stats, setStats] = useState<BackendStats | null>(null);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const [txs, s] = await Promise.all([getTransactions(), getStats()]);
+        setAuditEntries(txs.slice(0, 5));
+        setStats(s);
+      } catch {}
+    }
+    load();
+    const timer = window.setInterval(load, 3000);
+    return () => window.clearInterval(timer);
+  }, []);
+
+  const blockStats = [
+    { label: "TOTAL EVENTS", value: String(stats?.total ?? "—"), count: stats?.total ?? 0, color: "#FFFFFF" },
+    { label: "BLOCKED", value: String(stats?.blocked ?? "—"), count: stats?.blocked ?? 0, color: "#EF4444" },
+    { label: "ESCALATED", value: String(stats?.escalated ?? "—"), count: stats?.escalated ?? 0, color: "#F59E0B" },
+    { label: "ALLOWED", value: String(stats?.allowed ?? "—"), count: stats?.allowed ?? 0, color: "#22C55E" },
+  ];
+
   return (
     <motion.aside
       initial={{ opacity: 0, x: -60 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ duration: 0.6, ease: "easeOut" }}
-      className="bb-scrollbar relative order-2 h-auto overflow-y-auto border-r border-[rgba(123,47,255,0.1)] p-4 lg:order-none lg:h-[calc(100vh-48px)]"
+      className="bb-scrollbar relative order-2 h-auto overflow-y-auto border-r border-[rgba(123,47,255,0.1)] p-4 lg:order-none lg:h-full"
     >
       <div className="grid grid-cols-3 gap-2">
         {gauges.map((gauge) => (
@@ -42,21 +67,27 @@ export default function ChainStatsLeft() {
 
       <section className="mt-5 grid grid-cols-2 gap-2">
         {blockStats.map((stat) => (
-          <BlockStat key={stat.label} {...stat} />
+          <BlockStat key={stat.label} label={stat.label} value={stat.value} count={stat.count} color={stat.color} />
         ))}
       </section>
 
       <section className="mt-5">
         <SectionLabel>◈ AUDIT LOG</SectionLabel>
         <div className="mt-2">
-          {auditEntries.map((entry) => (
-            <div
-              key={entry}
-              className="border-b border-white/[0.04] py-2 font-mono text-[9px] text-[#94A3B8] transition hover:text-[#CBD5E1]"
-            >
-              {entry}
-            </div>
-          ))}
+          {auditEntries.length === 0 ? (
+            <p className="py-2 font-mono text-[9px] text-[#475569]">No entries yet.</p>
+          ) : (
+            auditEntries.map((tx) => (
+              <div
+                key={tx.tx_hash}
+                className="flex items-center gap-2 border-b border-white/[0.04] py-2 font-mono text-[9px] text-[#94A3B8] transition hover:text-[#CBD5E1]"
+              >
+                <span className="shrink-0" style={{ color: decisionColor(tx.decision) }}>●</span>
+                <span className="shrink-0">{formatAuditTime(tx.timestamp)}</span>
+                <span className="min-w-0 flex-1 truncate">· {tx.actor} · {tx.tx_hash.slice(0, 14)}</span>
+              </div>
+            ))
+          )}
         </div>
       </section>
     </motion.aside>

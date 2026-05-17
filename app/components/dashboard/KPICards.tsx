@@ -3,8 +3,16 @@
 import { motion } from "framer-motion";
 import { AlertTriangle, CheckCircle, Cpu, ShieldAlert, TrendingUp } from "lucide-react";
 import type { ComponentType, SVGProps } from "react";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Area, AreaChart, ResponsiveContainer } from "recharts";
+import {
+  getAgentsDashboard,
+  getAuditLog,
+  getIncidentSummary,
+  type AgentsDashboardResponse,
+  type AuditLogEntry,
+  type IncidentSummary,
+} from "../../lib/backend";
 
 type KPI = {
   label: string;
@@ -20,56 +28,37 @@ type KPI = {
   sparkline: number[];
 };
 
-const cards: KPI[] = [
-  {
-    label: "ACTIVE THREATS",
-    value: "24",
-    icon: ShieldAlert,
-    tone: "var(--alert-red)",
-    pill: "+3 since yesterday",
-    sparkline: [8, 12, 9, 15, 11, 18, 14, 20, 16, 24],
-  },
-  {
-    label: "TRUST SCORE",
-    value: "87.4",
-    unit: "%",
-    icon: CheckCircle,
-    tone: "var(--glow-cyan)",
-    valueClass: "text-[var(--glow-cyan)]",
-    pill: "↑ 2.1 pts this week",
-    sparkline: [82, 83, 85, 84, 86, 85, 87, 86, 88, 87.4],
-  },
-  {
-    label: "RISK INDEX",
-    value: "42",
-    icon: TrendingUp,
-    tone: "var(--alert-orange)",
-    valueClass: "text-[var(--alert-orange)]",
-    pill: "MODERATE RISK",
-    subLabel: "threshold: 60",
-    sparkline: [55, 50, 48, 52, 45, 44, 46, 43, 42, 42],
-  },
-  {
-    label: "AI AGENTS",
-    value: "7",
-    icon: Cpu,
-    tone: "var(--glow-purple)",
-    pill: "5 running · 2 idle",
-    agents: true,
-    sparkline: [4, 5, 4, 6, 5, 7, 6, 7, 7, 7],
-  },
-  {
-    label: "INCIDENTS TODAY",
-    value: "12",
-    icon: AlertTriangle,
-    tone: "var(--alert-yellow)",
-    pill: "",
-    progress: true,
-    sparkline: [3, 5, 4, 7, 6, 8, 9, 10, 11, 12],
-  },
-];
-
 export default function KPICards() {
+  const [auditEntries, setAuditEntries] = useState<AuditLogEntry[]>([]);
+  const [agentsDashboard, setAgentsDashboard] = useState<AgentsDashboardResponse | null>(null);
+  const [incidentSummary, setIncidentSummary] = useState<IncidentSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadData() {
+      const [auditResult, agentsResult, incidentsResult] = await Promise.allSettled([
+        getAuditLog(),
+        getAgentsDashboard(),
+        getIncidentSummary(),
+      ]);
+
+      if (cancelled) return;
+      if (auditResult.status === "fulfilled") setAuditEntries(auditResult.value);
+      if (agentsResult.status === "fulfilled") setAgentsDashboard(agentsResult.value);
+      if (incidentsResult.status === "fulfilled") setIncidentSummary(incidentsResult.value);
+    }
+
+    loadData();
+    const intervalId = window.setInterval(loadData, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const cards = useMemo(() => buildCards(auditEntries, agentsDashboard, incidentSummary), [auditEntries, agentsDashboard, incidentSummary]);
+
   return (
     <motion.section
       initial="hidden"
@@ -146,6 +135,96 @@ function KPICard({ card }: { card: KPI }) {
   );
 }
 
+function buildCards(
+  auditEntries: AuditLogEntry[],
+  agentsDashboard: AgentsDashboardResponse | null,
+  incidentSummary: IncidentSummary | null,
+): KPI[] {
+  const activeThreats = auditEntries.filter((entry) => {
+    const decision = String(entry.decision).toUpperCase();
+    return decision === "BLOCK" || decision === "ESCALATE";
+  }).length;
+  const avgRisk = auditEntries.length
+    ? auditEntries.reduce((sum, entry) => sum + Number(entry.risk_score || 0), 0) / auditEntries.length
+    : 0;
+  const trustScore = Math.max(0, Math.min(100, 100 - avgRisk * 100));
+  const riskIndex = Math.round(avgRisk * 100);
+  const summary = incidentSummary ?? {
+    total: 0,
+    approved: 0,
+    blocked: 0,
+    pending: 0,
+    assigned: 0,
+    active: 0,
+    approval_rate: 0,
+    block_rate: 0,
+  };
+  const totalAgents = agentsDashboard?.summary.total_agents ?? 0;
+  const activeAgents = agentsDashboard?.summary.active_agents ?? 0;
+  const idleAgents = Math.max(0, totalAgents - activeAgents);
+  const threatsDelta = activeThreats > 0 ? `+${activeThreats} from audit log` : "No active threats";
+
+  return [
+    {
+      label: "ACTIVE THREATS",
+      value: String(activeThreats),
+      icon: ShieldAlert,
+      tone: "var(--alert-red)",
+      pill: threatsDelta,
+      sparkline: sparkline(activeThreats, 10),
+    },
+    {
+      label: "TRUST SCORE",
+      value: trustScore.toFixed(1),
+      unit: "%",
+      icon: CheckCircle,
+      tone: "var(--glow-cyan)",
+      valueClass: "text-[var(--glow-cyan)]",
+      pill: `${summary.approved} approvals completed`,
+      sparkline: sparkline(Math.round(trustScore), 10),
+    },
+    {
+      label: "RISK INDEX",
+      value: String(riskIndex),
+      icon: TrendingUp,
+      tone: "var(--alert-orange)",
+      valueClass: "text-[var(--alert-orange)]",
+      pill: riskLabel(riskIndex),
+      subLabel: "threshold: 60",
+      sparkline: sparkline(riskIndex, 10),
+    },
+    {
+      label: "AI AGENTS",
+      value: String(totalAgents),
+      icon: Cpu,
+      tone: "var(--glow-purple)",
+      pill: `${activeAgents} running · ${idleAgents} idle`,
+      agents: true,
+      sparkline: sparkline(activeAgents, 10),
+    },
+    {
+      label: "INCIDENTS TODAY",
+      value: String(summary.total),
+      icon: AlertTriangle,
+      tone: "var(--alert-yellow)",
+      pill: "",
+      progress: true,
+      sparkline: sparkline(summary.total, 10),
+    },
+  ];
+}
+
+function riskLabel(riskIndex: number) {
+  if (riskIndex >= 80) return "HIGH RISK";
+  if (riskIndex >= 60) return "ELEVATED RISK";
+  if (riskIndex >= 35) return "MODERATE RISK";
+  return "LOW RISK";
+}
+
+function sparkline(latest: number, points: number) {
+  return Array.from({ length: points }, (_, index) => Math.max(0, latest - (points - index - 1)));
+}
+
 function Sparkline({ data, color }: { data: number[]; color: string }) {
   const [mounted, setMounted] = useState(false);
   const chartData = data.map((value, index) => ({ index, value }));
@@ -198,17 +277,48 @@ function AgentDots() {
 }
 
 function IncidentProgress() {
+  const [incidentSummary, setIncidentSummary] = useState<IncidentSummary | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadSummary() {
+      try {
+        const summary = await getIncidentSummary();
+        if (!cancelled) {
+          setIncidentSummary(summary);
+        }
+      } catch {
+        if (!cancelled) {
+          setIncidentSummary(null);
+        }
+      }
+    }
+
+    loadSummary();
+    const intervalId = window.setInterval(loadSummary, 4000);
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, []);
+
+  const resolved = (incidentSummary?.approved ?? 0) + (incidentSummary?.blocked ?? 0);
+  const open = incidentSummary?.active ?? 0;
+  const total = Math.max(1, resolved + open);
+  const resolvedWidth = `${(resolved / total) * 100}%`;
+
   return (
     <div className="mt-3">
       <p className="font-mono text-xs">
-        <span className="text-[var(--text-muted)]">9 resolved</span>
+        <span className="text-[var(--text-muted)]">{resolved} resolved</span>
         <span className="px-2 text-[color-mix(in_srgb,var(--text-muted)_45%,transparent)]">·</span>
-        <span className="text-[var(--alert-red)]">3 open</span>
+        <span className="text-[var(--alert-red)]">{open} open</span>
       </p>
       <div className="mt-3 h-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--text-primary)_6%,transparent)]">
         <motion.div
           initial={{ width: 0 }}
-          animate={{ width: "75%" }}
+          animate={{ width: resolvedWidth }}
           transition={{ duration: 1.2, ease: "easeOut" }}
           className="h-full rounded-full bg-gradient-to-r from-[var(--alert-yellow)] to-[var(--alert-red)]"
         />
