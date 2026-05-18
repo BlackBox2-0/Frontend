@@ -3,15 +3,26 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-const REPULSION = 4000;
-const IDEAL_LENGTH = 150;
+const REPULSION = 4800;
+const IDEAL_LENGTH = 160;
 const SPRING_K = 0.004;
 const DAMPING = 0.88;
 const GRAVITY = 0.001;
 const DRIFT_AMP = 0.06;
 const MAX_SPEED = 2;
-const CANVAS_HEIGHT = 480;
-const BOUNDS_PADDING = 100;
+const CANVAS_HEIGHT = 540;
+const BOUNDS_PADDING = 110;
+
+const agentColorMap = {
+  "Agent-01": "#EF4444",
+  "Agent-02": "#38BDF8",
+  "Agent-03": "#A78BFA",
+  "Agent-04": "#06B6D4",
+  "Agent-05": "#F59E0B",
+  "Agent-06": "#F97316",
+  "Agent-07": "#C084FC",
+  "CORE":     "#9B5CF6",
+};
 
 const fallbackAgents = [
   { id: "Agent-01", role: "Threat Hunter", status: "investigating", mass: 2.5 },
@@ -81,11 +92,11 @@ const fallbackAgentMetrics = {
 };
 
 function getRadius(node) {
-  if (node.status === "core") return 36;
-  if (node.status === "investigating") return 22;
-  if (node.status === "monitoring") return 17;
-  if (node.status === "scanning") return 18;
-  return 13;
+  if (node.status === "core") return 44;
+  if (node.status === "investigating") return 26;
+  if (node.status === "monitoring") return 22;
+  if (node.status === "scanning") return 24;
+  return 18;
 }
 
 function getPointerPosition(event, canvas) {
@@ -269,7 +280,7 @@ export default function NeuralMesh({ agents = [] }) {
         task: agent.task || taskByStatus[normalizedStatus],
         mass: agent.id === "CORE" ? 5 : normalizedStatus === "investigating" ? 2.2 : normalizedStatus === "monitoring" ? 1.8 : normalizedStatus === "scanning" ? 1.9 : 1.2,
         fixed: agent.id === "CORE",
-        color: agent.color || statusColors[normalizedStatus],
+        color: agentColorMap[agent.id] || statusColors[normalizedStatus],
         radius: getRadius({ status: normalizedStatus }),
         pulsePhase: index * 0.9,
         accuracy: agent.accuracy || `${accuracyValue.toFixed(1)}%`,
@@ -610,27 +621,58 @@ export default function NeuralMesh({ agents = [] }) {
     };
 
     const drawBackground = (width, height) => {
-      const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height) * 0.6);
-      bgGrad.addColorStop(0, "rgba(123,47,255,0.08)");
-      bgGrad.addColorStop(0.5, "rgba(155,92,246,0.03)");
-      bgGrad.addColorStop(1, "rgba(5,3,15,0)");
+      // Deep space base
+      ctx.fillStyle = "rgba(5,3,15,1)";
+      ctx.fillRect(0, 0, width, height);
+
+      // Central radial glow
+      const bgGrad = ctx.createRadialGradient(width / 2, height / 2, 0, width / 2, height / 2, Math.max(width, height) * 0.65);
+      bgGrad.addColorStop(0,   "rgba(123,47,255,0.14)");
+      bgGrad.addColorStop(0.35,"rgba(123,47,255,0.06)");
+      bgGrad.addColorStop(0.7, "rgba(56,189,248,0.03)");
+      bgGrad.addColorStop(1,   "rgba(5,3,15,0)");
       ctx.fillStyle = bgGrad;
       ctx.fillRect(0, 0, width, height);
 
-      ctx.strokeStyle = "rgba(123,47,255,0.04)";
-      ctx.lineWidth = 1;
-      for (let x = 0; x < width; x += 40) {
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, height);
-        ctx.stroke();
+      // Circuit grid — fine lines
+      ctx.lineWidth = 0.5;
+      ctx.strokeStyle = "rgba(123,47,255,0.07)";
+      const step = 48;
+      for (let x = 0; x < width; x += step) {
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, height); ctx.stroke();
       }
-      for (let y = 0; y < height; y += 40) {
-        ctx.beginPath();
-        ctx.moveTo(0, y);
-        ctx.lineTo(width, y);
-        ctx.stroke();
+      for (let y = 0; y < height; y += step) {
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(width, y); ctx.stroke();
       }
+
+      // Glowing dots at intersections
+      ctx.fillStyle = "rgba(123,47,255,0.22)";
+      for (let x = 0; x < width; x += step) {
+        for (let y = 0; y < height; y += step) {
+          const dx = x - width / 2;
+          const dy = y - height / 2;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const maxDist = Math.min(width, height) * 0.55;
+          if (dist < maxDist) {
+            const alpha = (1 - dist / maxDist) * 0.25;
+            ctx.globalAlpha = alpha;
+            ctx.beginPath();
+            ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      ctx.globalAlpha = 1;
+
+      // Concentric rings around center
+      [0.12, 0.23, 0.36].forEach((frac, i) => {
+        const r = Math.min(width, height) * frac;
+        ctx.beginPath();
+        ctx.arc(width / 2, height / 2, r, 0, Math.PI * 2);
+        ctx.strokeStyle = `rgba(123,47,255,${0.06 - i * 0.015})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      });
     };
 
     const drawEdge = (edge, edgeIndex, highlighted = false) => {
@@ -642,37 +684,53 @@ export default function NeuralMesh({ agents = [] }) {
       const dy = b.y - a.y;
       const dist = Math.sqrt(dx * dx + dy * dy) || 1;
       const tension = dist / IDEAL_LENGTH;
-      const alpha = 0.25;
+      const isCoreLine = edge.from === "CORE" || edge.to === "CORE";
+      const alpha = highlighted ? 0.7 : isCoreLine ? 0.45 : 0.3;
       const aColor = normalizeCanvasColor(a.color);
       const bColor = normalizeCanvasColor(b.color);
       const gradient = ctx.createLinearGradient(a.x, a.y, b.x, b.y);
       gradient.addColorStop(0, colorToRgba(aColor, alpha));
+      gradient.addColorStop(0.5, colorToRgba(aColor, alpha * 0.6));
       gradient.addColorStop(1, colorToRgba(bColor, alpha));
 
       const midX = (a.x + b.x) / 2;
       const midY = (a.y + b.y) / 2;
-      const cpX = midX + (-dy / dist) * (15 + tension * 5);
-      const cpY = midY + (dx / dist) * (15 + tension * 5);
+      const cpX = midX + (-dy / dist) * (18 + tension * 6);
+      const cpY = midY + (dx / dist) * (18 + tension * 6);
 
+      // Glow pass
       ctx.beginPath();
       ctx.moveTo(a.x, a.y);
       ctx.quadraticCurveTo(cpX, cpY, b.x, b.y);
       ctx.strokeStyle = gradient;
-      ctx.lineWidth = 1;
+      ctx.lineWidth = isCoreLine ? 3 : 1.5;
+      ctx.shadowBlur = isCoreLine ? 14 : 6;
+      ctx.shadowColor = colorToRgba(aColor, 0.6);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+
+      // Crisp line on top
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.quadraticCurveTo(cpX, cpY, b.x, b.y);
+      ctx.strokeStyle = gradient;
+      ctx.lineWidth = isCoreLine ? 1.5 : 0.8;
       ctx.stroke();
 
       if (highlighted) return;
 
-      for (let p = 0; p < 2; p += 1) {
-        const t = (Date.now() * 0.0005 + p * 0.5 + edgeIndex * 0.2) % 1;
+      // Data flow pulses
+      const pulseCount = isCoreLine ? 3 : 2;
+      for (let p = 0; p < pulseCount; p += 1) {
+        const t = (Date.now() * 0.0006 + p * (1 / pulseCount) + edgeIndex * 0.15) % 1;
         const point = getBezierPoint(a, b, cpX, cpY, t);
-        const pulseRadius = 2 + tension * 0.5;
+        const pulseRadius = isCoreLine ? 3.5 : 2.2;
         const pulseColor = normalizeCanvasColor(a.color);
 
         ctx.beginPath();
         ctx.arc(point.x, point.y, pulseRadius, 0, Math.PI * 2);
         ctx.fillStyle = pulseColor;
-        ctx.shadowBlur = 8 + tension * 4;
+        ctx.shadowBlur = isCoreLine ? 16 : 10;
         ctx.shadowColor = pulseColor;
         ctx.fill();
         ctx.shadowBlur = 0;
@@ -763,99 +821,142 @@ export default function NeuralMesh({ agents = [] }) {
       const vy = isFinite(node.vy) ? node.vy : 0;
       const speed = Math.sqrt(vx ** 2 + vy ** 2);
       const energyPulse = Math.min(speed * 0.3, 4);
-      const displayRadius = (node.radius || 14) + energyPulse;
-      const auraRadius = displayRadius + 8 + pulse * 4;
+      const displayRadius = (node.radius || 18) + energyPulse;
+      const auraRadius = displayRadius + 12 + pulse * 6;
       const nodeColor = normalizeCanvasColor(node.color);
+      const isCore = node.id === "CORE";
 
-      // Dendrites are decorative — render failure must not affect the node body
+      // Dendrites
       try { drawNeuronDendrites(node, displayRadius); } catch {}
 
-      [0.04, 0.08, 0.12].forEach((opacity, i) => {
-        const r = auraRadius - i * 4;
+      // Outer aura rings
+      [0.06, 0.11, 0.18].forEach((opacity, i) => {
+        const r = auraRadius - i * 5;
         ctx.beginPath();
         ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
         ctx.strokeStyle = colorToRgba(nodeColor, opacity);
-        ctx.lineWidth = 1;
+        ctx.lineWidth = 1.5;
         ctx.stroke();
       });
 
+      // Outer glow pass (large, soft)
+      ctx.beginPath();
+      ctx.arc(node.x, node.y, displayRadius * 1.5, 0, Math.PI * 2);
+      ctx.fillStyle = colorToRgba(nodeColor, 0.08);
+      ctx.fill();
+
+      // Main sphere gradient
       const gradient = ctx.createRadialGradient(
         node.x - displayRadius * 0.3,
-        node.y - displayRadius * 0.3,
+        node.y - displayRadius * 0.35,
         0,
         node.x,
         node.y,
         displayRadius,
       );
       gradient.addColorStop(0, colorToRgba(nodeColor, 1));
-      gradient.addColorStop(0.6, colorToRgba(nodeColor, 0.8));
-      gradient.addColorStop(1, colorToRgba(nodeColor, 0.53));
+      gradient.addColorStop(0.55, colorToRgba(nodeColor, 0.88));
+      gradient.addColorStop(1, colorToRgba(nodeColor, 0.55));
 
       ctx.beginPath();
       ctx.arc(node.x, node.y, displayRadius, 0, Math.PI * 2);
       ctx.fillStyle = gradient;
-      ctx.shadowBlur = (node.id === "CORE" ? 60 : hovered ? 40 : 20) + energyPulse * 3;
-      ctx.shadowColor = node.id === "CORE" ? "rgba(123,47,255,0.6)" : nodeColor;
+      ctx.shadowBlur = isCore ? 80 : hovered ? 55 : 32;
+      ctx.shadowColor = isCore ? "rgba(155,92,246,0.9)" : nodeColor;
       ctx.fill();
       ctx.shadowBlur = 0;
 
+      // Inner rim (bright edge)
       ctx.beginPath();
-      ctx.arc(node.x - displayRadius * 0.25, node.y - displayRadius * 0.25, displayRadius * 0.25, 0, Math.PI * 2);
-      ctx.fillStyle = "rgba(255,255,255,0.4)";
+      ctx.arc(node.x, node.y, displayRadius, 0, Math.PI * 2);
+      ctx.strokeStyle = colorToRgba(nodeColor, 0.55);
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+
+      // Specular highlight
+      ctx.beginPath();
+      ctx.arc(node.x - displayRadius * 0.28, node.y - displayRadius * 0.28, displayRadius * 0.28, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(255,255,255,0.45)";
       ctx.fill();
 
-      if (node.id === "CORE") {
-        const coreRing = 45 + Math.sin(Date.now() * 0.002) * 8;
+      // CORE extra rings
+      if (isCore) {
+        const t = Date.now();
+        const coreRing = 58 + Math.sin(t * 0.002) * 6;
 
+        // Solid ring
         ctx.beginPath();
         ctx.arc(node.x, node.y, coreRing, 0, Math.PI * 2);
-        ctx.strokeStyle = "rgba(123,47,255,0.2)";
+        ctx.strokeStyle = "rgba(155,92,246,0.35)";
         ctx.lineWidth = 2;
         ctx.stroke();
 
+        // CW dashed ring
         ctx.save();
         ctx.translate(node.x, node.y);
-        ctx.rotate(Date.now() * 0.0005);
+        ctx.rotate(t * 0.0006);
         ctx.beginPath();
-        ctx.arc(0, 0, 42, 0, Math.PI * 2);
-        ctx.setLineDash([4, 8]);
-        ctx.strokeStyle = "#7B2FFF66";
-        ctx.lineWidth = 1;
+        ctx.arc(0, 0, 66, 0, Math.PI * 2);
+        ctx.setLineDash([5, 9]);
+        ctx.strokeStyle = "rgba(123,47,255,0.5)";
+        ctx.lineWidth = 1.5;
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.restore();
 
+        // CCW dashed ring
         ctx.save();
         ctx.translate(node.x, node.y);
-        ctx.rotate(-Date.now() * 0.0003);
+        ctx.rotate(-t * 0.0004);
         ctx.beginPath();
-        ctx.arc(0, 0, 52, 0, Math.PI * 2);
-        ctx.setLineDash([2, 12]);
-        ctx.strokeStyle = "#9B5CF640";
+        ctx.arc(0, 0, 78, 0, Math.PI * 2);
+        ctx.setLineDash([2, 14]);
+        ctx.strokeStyle = "rgba(56,189,248,0.3)";
         ctx.lineWidth = 1;
         ctx.stroke();
         ctx.setLineDash([]);
         ctx.restore();
       }
 
-      ctx.fillStyle = "#FFFFFF";
-      ctx.font = "bold 11px 'JetBrains Mono'";
+      // Labels
+      const labelY = node.y + displayRadius + 18;
       ctx.textAlign = "center";
-      ctx.fillText(node.id, node.x, node.y + displayRadius + 16);
 
-      ctx.fillStyle = nodeColor;
-      ctx.font = "10px 'Syne'";
-      ctx.fillText(node.role, node.x, node.y + displayRadius + 28);
+      // ID
+      ctx.fillStyle = "#FFFFFF";
+      ctx.font = `bold 11px 'JetBrains Mono', monospace`;
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = nodeColor;
+      ctx.fillText(node.id, node.x, labelY);
+      ctx.shadowBlur = 0;
 
-      const badgeText = node.status.toUpperCase();
-      const badgeW = ctx.measureText(badgeText).width + 12;
-      ctx.fillStyle = colorToRgba(nodeColor, 0.15);
-      ctx.beginPath();
-      drawRoundRect(ctx, node.x - badgeW / 2, node.y + displayRadius + 32, badgeW, 14, 4);
-      ctx.fill();
+      // Role
       ctx.fillStyle = nodeColor;
-      ctx.font = "8px 'JetBrains Mono'";
-      ctx.fillText(badgeText, node.x, node.y + displayRadius + 42);
+      ctx.font = `10px 'Syne', sans-serif`;
+      ctx.fillText(node.role, node.x, labelY + 14);
+
+      // Accuracy badge
+      if (node.accuracy) {
+        const badgeText = node.accuracy;
+        ctx.font = `bold 9px 'JetBrains Mono', monospace`;
+        const badgeW = ctx.measureText(badgeText).width + 14;
+        const badgeX = node.x - badgeW / 2;
+        const badgeY = labelY + 20;
+
+        ctx.fillStyle = colorToRgba(nodeColor, 0.18);
+        ctx.beginPath();
+        drawRoundRect(ctx, badgeX, badgeY, badgeW, 15, 4);
+        ctx.fill();
+
+        ctx.strokeStyle = colorToRgba(nodeColor, 0.4);
+        ctx.lineWidth = 0.8;
+        ctx.beginPath();
+        drawRoundRect(ctx, badgeX, badgeY, badgeW, 15, 4);
+        ctx.stroke();
+
+        ctx.fillStyle = nodeColor;
+        ctx.fillText(badgeText, node.x, badgeY + 11);
+      }
     };
 
     const draw = () => {
@@ -914,12 +1015,12 @@ export default function NeuralMesh({ agents = [] }) {
     <div className="flex w-full items-start gap-4">
       <div
         ref={containerRef}
-        className="relative h-[480px] min-w-0 flex-1 overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.2)] bg-[var(--bg-base)]"
+        className="relative h-[540px] min-w-0 flex-1 overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.25)] bg-[var(--bg-base)] shadow-[0_0_40px_rgba(123,47,255,0.08),inset_0_0_60px_rgba(5,3,15,0.6)]"
       >
         <canvas
           ref={canvasRef}
           aria-label="BlackBooks AI agents force-directed neural mesh"
-          className="absolute inset-0 z-[1] h-[480px] w-full cursor-grab bg-transparent active:cursor-grabbing"
+          className="absolute inset-0 z-[1] h-[540px] w-full cursor-grab bg-transparent active:cursor-grabbing"
           style={{ pointerEvents: "all" }}
         />
 
@@ -960,7 +1061,7 @@ export default function NeuralMesh({ agents = [] }) {
             animate={{ width: 280, opacity: 1 }}
             exit={{ width: 0, opacity: 0 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="flex h-[480px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.2)] bg-[rgba(13,11,26,0.97)] shadow-[-18px_0_32px_rgba(2,1,8,0.22)] backdrop-blur-md"
+            className="flex h-[540px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.2)] bg-[rgba(13,11,26,0.97)] shadow-[-18px_0_32px_rgba(2,1,8,0.22)] backdrop-blur-md"
           >
             {/* Scrollable content area */}
             <div className="relative min-h-0 flex-1 overflow-y-auto p-5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">

@@ -1,6 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
   type AgentTestInput,
@@ -10,6 +11,7 @@ import {
   getAgentsDashboard,
   runAgentTest,
 } from "../../lib/backend";
+import { saveSimulation } from "../../lib/simulationStore";
 
 type Scenario = {
   title: string;
@@ -163,8 +165,9 @@ const FLOW_STEP_DELAY_MS = 650;
 const FLOW_FINAL_HOLD_MS = 400;
 
 export default function SimulationPanel() {
+  const router = useRouter();
   const [dashboard, setDashboard] = useState<AgentsDashboardResponse | null>(null);
-  const [selectedAgentId, setSelectedAgentId] = useState<string>("CORE");
+  const selectedAgentId = "CORE";
   const [runningScenario, setRunningScenario] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [lastTest, setLastTest] = useState<AgentTestResponse | null>(null);
@@ -181,9 +184,6 @@ export default function SimulationPanel() {
         const data = await getAgentsDashboard();
         if (!cancelled) {
           setDashboard(data);
-          if (!data.agents.some((agent) => agent.id === selectedAgentId) && data.agents[0]) {
-            setSelectedAgentId(data.agents[0].id);
-          }
         }
       } catch (err) {
         if (!cancelled) {
@@ -196,7 +196,7 @@ export default function SimulationPanel() {
     return () => {
       cancelled = true;
     };
-  }, [selectedAgentId]);
+  }, []);
 
   const selectedAgent = useMemo(
     () => dashboard?.agents.find((agent) => agent.id === selectedAgentId) ?? null,
@@ -204,6 +204,7 @@ export default function SimulationPanel() {
   );
   const lastPolicyDecision = useMemo(() => extractPolicyDecision(lastTest?.result), [lastTest]);
   const lastExecutiveSummary = useMemo(() => extractExecutiveSummary(lastTest?.result), [lastTest]);
+  const orchestrationResult = useMemo(() => extractOrchestrationResult(lastTest?.result), [lastTest]);
 
   useEffect(() => {
     return () => {
@@ -254,6 +255,35 @@ export default function SimulationPanel() {
       setLastTest(response);
       setDashboard(response.dashboard);
       finalizeFlow(selectedAgentId);
+
+      const orc = extractOrchestrationResult(response.result);
+      const pd = extractPolicyDecision(response.result);
+      if (orc && pd) {
+        const ev = orc.collected_event.normalized_event;
+        saveSimulation({
+          user: ev.user,
+          role: ev.role,
+          department: ev.department,
+          action: ev.action,
+          resource: ev.resource,
+          context: ev.context,
+          activitySystem: orc.activity.system,
+          activityAction: orc.activity.action,
+          productivityDecision: orc.productivity.decision,
+          productivityScore: orc.productivity.score,
+          riskScore: orc.risk_assessment.risk_score,
+          flags: orc.risk_assessment.flags,
+          reasoning: orc.enforcement.reasoning,
+          executiveSummary: extractExecutiveSummary(response.result),
+          requiresHumanApproval: orc.enforcement.requires_human_approval,
+          aiRecommendation: pd.model_recommendation,
+          finalDecision: pd.final_decision,
+          decisionSource: pd.final_decision_source,
+          policyRuleMatched: pd.policy_rule_matched ?? null,
+          policyVersion: pd.policy_version ?? null,
+          matchKey: `${ev.user}:${ev.action}`,
+        });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Simulation run failed.");
       clearFlowTimers();
@@ -280,38 +310,8 @@ export default function SimulationPanel() {
           </span>
         </div>
         <p className="font-mono text-[11px] text-[var(--text-muted)]">
-          Events with risk ≥ 80 are auto-blocked · Select an agent and launch a scenario
+          Events with risk ≥ 80 are auto-blocked · Full pipeline · Select a scenario to simulate
         </p>
-      </div>
-
-      {/* ── Target Agent selector ── */}
-      <div className="flex flex-wrap items-center gap-4 border-b border-[var(--bb-divider)] px-6 py-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.14em] text-[var(--text-muted)]">Target Agent</p>
-        <div className="flex flex-wrap gap-2">
-          {(dashboard?.agents ?? []).map((agent) => (
-            <button
-              key={agent.id}
-              type="button"
-              onClick={() => setSelectedAgentId(agent.id)}
-              className={[
-                "rounded-full border px-3 py-1.5 font-mono text-[10px] uppercase tracking-[0.12em] transition",
-                selectedAgentId === agent.id
-                  ? "border-[var(--glow-purple)] bg-[rgba(123,47,255,0.14)] text-white shadow-[0_0_12px_rgba(123,47,255,0.25)]"
-                  : "border-[rgba(123,47,255,0.26)] text-[var(--text-secondary)] hover:border-[var(--glow-purple)] hover:text-white",
-              ].join(" ")}
-            >
-              {agent.id}
-            </button>
-          ))}
-        </div>
-        {selectedAgent ? (
-          <p className="ml-auto font-mono text-[11px] text-[var(--text-muted)]">
-            Routing through <span className="text-[var(--text-secondary)]">{selectedAgent.role}</span>
-            {selectedAgentId === "CORE" || selectedAgentId === "Agent-06"
-              ? " · full pipeline"
-              : " · single stage"}
-          </p>
-        ) : null}
       </div>
 
       {/* ── Agent Pipeline Flow (full width) ── */}
@@ -469,7 +469,7 @@ export default function SimulationPanel() {
             key={scenario.title}
             type="button"
             onClick={() => handleScenarioRun(scenario)}
-            disabled={runningScenario !== null || !selectedAgent}
+            disabled={runningScenario !== null || !dashboard}
             className={[
               "group rounded-2xl border bg-[rgba(255,255,255,0.02)] px-5 py-4 text-left transition",
               "hover:bg-[rgba(255,255,255,0.035)] disabled:cursor-not-allowed disabled:opacity-60",
@@ -499,97 +499,34 @@ export default function SimulationPanel() {
       </div>
 
       {lastTest ? (
-        <div className="border-t border-[var(--bb-divider)] px-6 py-4">
-          <div className="rounded-xl border border-white/[0.06] bg-white/[0.03] px-4 py-3">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <p className="font-body text-sm font-semibold text-white">{lastTest.agent_role}</p>
-              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
-                {new Date(lastTest.tested_at).toLocaleString()}
-              </span>
-            </div>
-            <p className="mt-2 font-mono text-[11px] text-[var(--text-secondary)]">{lastTest.message}</p>
-            {lastPolicyDecision ? (
-              <div className="mt-4 rounded-xl border border-white/[0.06] bg-[rgba(255,255,255,0.02)] px-4 py-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
-                    Gemini
-                  </span>
-                  <span
-                    className={[
-                      "rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em]",
-                      decisionBadgeStyles[lastPolicyDecision.model_recommendation],
-                    ].join(" ")}
-                  >
-                    {lastPolicyDecision.model_recommendation}
-                  </span>
-                  <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
-                    Final
-                  </span>
-                  <span
-                    className={[
-                      "rounded-full border px-2.5 py-1 font-mono text-[10px] uppercase tracking-[0.12em]",
-                      decisionBadgeStyles[lastPolicyDecision.final_decision],
-                    ].join(" ")}
-                  >
-                    {lastPolicyDecision.final_decision}
-                  </span>
-                  <span className="ml-auto font-mono text-[10px] text-[var(--text-muted)]">
-                    {lastPolicyDecision.policy_version}
-                  </span>
-                </div>
-
-                <div
-                  className={[
-                    "mt-3 rounded-lg border px-3 py-2",
-                    lastPolicyDecision.final_decision_source === "policy"
-                      ? "border-[rgba(249,115,22,0.28)] bg-[rgba(249,115,22,0.08)]"
-                      : "border-[rgba(56,189,248,0.28)] bg-[rgba(56,189,248,0.08)]",
-                  ].join(" ")}
-                >
-                  <p
-                    className={[
-                      "font-body text-xs font-semibold",
-                      lastPolicyDecision.final_decision_source === "policy"
-                        ? "text-[var(--alert-orange)]"
-                        : "text-[var(--glow-cyan)]",
-                    ].join(" ")}
-                  >
-                    {lastPolicyDecision.final_decision_source === "policy" ? "Policy Override" : "AI Decision"}
-                  </p>
-                  <p className="mt-1 font-mono text-[11px] text-[var(--text-secondary)]">
-                    {lastPolicyDecision.final_decision_source === "policy"
-                      ? lastPolicyDecision.policy_rule_matched ?? "Deterministic corporate policy applied."
-                      : "Gemini recommendation matched the active corporate policy."}
-                  </p>
-                </div>
-
-                {lastExecutiveSummary && lastPolicyDecision.final_decision !== "ALLOW" ? (
-                  <div
-                    className="mt-3 rounded-lg px-4 py-3"
-                    style={{
-                      borderLeft: `3px solid ${lastPolicyDecision.final_decision === "BLOCK" ? "#EF4444" : "#F59E0B"}`,
-                      background:
-                        lastPolicyDecision.final_decision === "BLOCK"
-                          ? "rgba(239,68,68,0.07)"
-                          : "rgba(245,158,11,0.07)",
-                    }}
-                  >
-                    <p
-                      className="mb-1.5 font-mono text-[9px] uppercase tracking-[0.14em]"
-                      style={{
-                        color: lastPolicyDecision.final_decision === "BLOCK" ? "#EF4444" : "#F59E0B",
-                      }}
-                    >
-                      🛡 Security Audit Summary
-                    </p>
-                    <p className="font-body text-[12px] leading-relaxed text-white">
-                      {lastExecutiveSummary}
-                    </p>
-                  </div>
-                ) : null}
+        <div className="border-t border-[var(--bb-divider)] px-6 py-5">
+          <motion.div
+            initial={{ opacity: 0, y: 8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.3, ease: "easeOut" }}
+            className="flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/[0.06] bg-white/[0.02] px-5 py-4"
+          >
+            <div className="flex items-center gap-3">
+              {lastPolicyDecision ? (
+                <span className={["rounded-full border px-3 py-1 font-mono text-[11px] font-bold uppercase tracking-[0.1em]", decisionBadgeStyles[lastPolicyDecision.final_decision]].join(" ")}>
+                  {lastPolicyDecision.final_decision}
+                </span>
+              ) : null}
+              <div>
+                <p className="font-body text-[13px] font-semibold text-white">{lastTest.message}</p>
+                <p className="font-mono text-[10px] text-[var(--text-muted)] mt-0.5">
+                  {new Date(lastTest.tested_at).toLocaleString()}
+                </p>
               </div>
-            ) : null}
-          </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => router.push("/threat-monitor")}
+              className="flex items-center gap-2 rounded-lg border border-[var(--glow-violet)] bg-[rgba(123,47,255,0.10)] px-4 py-2 font-body text-[12px] font-semibold text-[var(--glow-violet-light)] transition hover:bg-[rgba(123,47,255,0.18)] hover:shadow-[0_0_16px_rgba(123,47,255,0.28)]"
+            >
+              View in Threat Monitor →
+            </button>
+          </motion.div>
         </div>
       ) : null}
 
@@ -618,6 +555,9 @@ function isPipelineStep(agentId: string) {
 }
 
 function normalizeFlow(agentId: string) {
+  if (agentId === "CORE" || agentId === "Agent-06") {
+    return pipelineSteps.map((step) => step.id);
+  }
   if (isPipelineStep(agentId)) {
     return flowForAgent(agentId);
   }
@@ -662,4 +602,48 @@ function extractExecutiveSummary(result: unknown): string | null {
     candidate.risk_assessment?.executive_summary ??
     null
   );
+}
+
+type OrchestrationResult = {
+  collected_event: {
+    normalized_event: {
+      user: string;
+      role: string;
+      department: string;
+      action: string;
+      resource: string;
+      context: string;
+    };
+  };
+  activity: {
+    action: string;
+    system: string;
+    resource: string;
+  };
+  productivity: {
+    decision: string;
+    score: number;
+    signals: string[];
+    reasoning: string;
+  };
+  risk_assessment: {
+    risk_score: number;
+    decision: string;
+    reasoning: string;
+    flags: string[];
+    model_recommendation: string;
+  };
+  enforcement: {
+    final_decision: string;
+    analyst_decision: string;
+    requires_human_approval: boolean;
+    reasoning: string;
+  };
+};
+
+function extractOrchestrationResult(result: unknown): OrchestrationResult | null {
+  if (!result || typeof result !== "object") return null;
+  const r = result as Record<string, unknown>;
+  if (!r.collected_event || !r.risk_assessment || !r.enforcement || !r.activity || !r.productivity) return null;
+  return r as unknown as OrchestrationResult;
 }

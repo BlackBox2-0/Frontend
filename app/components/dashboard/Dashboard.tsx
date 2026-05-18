@@ -6,7 +6,6 @@ import DashboardHeader from "./DashboardHeader";
 import IncidentSummary from "./IncidentSummary";
 import KPICards from "./KPICards";
 import NetworkActivityMap from "./NetworkActivityMap";
-import SimulationPanel from "./SimulationPanel";
 import ThreatScoreRing from "./ThreatScoreRing";
 
 export default function Dashboard() {
@@ -14,7 +13,6 @@ export default function Dashboard() {
     <div className="text-[var(--text-primary)]">
       <DashboardHeader />
       <KPICards />
-      <SimulationPanel />
       <IncidentSummary />
       <section className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(280px,38fr)_minmax(0,62fr)]">
         <div className="min-w-0">

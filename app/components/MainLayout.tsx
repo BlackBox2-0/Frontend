@@ -14,11 +14,13 @@ import {
   Link2,
   Search,
   ShieldAlert,
+  Zap,
 } from "lucide-react";
 
 const navItems = [
   { label: "Dashboard", icon: Grid3X3, href: "/" },
   { label: "Threat Monitor", icon: ShieldAlert, href: "/threat-monitor" },
+  { label: "Simulation", icon: Zap, href: "/simulation" },
   { label: "AI Agents", icon: Cpu, href: "/ai-agents" },
   { label: "Company", icon: Building2, href: "/company" },
   { label: "Behavioral Intel", icon: Brain, href: "/behavioral-intel" },

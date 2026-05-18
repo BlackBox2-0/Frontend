@@ -15,6 +15,7 @@ import {
   rejectIncident,
 } from "../../lib/backend";
 import ThreatFeedItem, { type ThreatFeedItemData } from "./ThreatFeedItem";
+import { getSimulation, clearSimulation, type SimulationDetail } from "../../lib/simulationStore";
 
 const criticalBg = "rgba(239,68,68,0.15)";
 const highBg = "rgba(249,115,22,0.15)";
@@ -29,6 +30,12 @@ export default function ThreatFeed() {
   const [auditEntries, setAuditEntries] = useState<AuditLogEntry[]>([]);
   const [incidentActions, setIncidentActions] = useState<IncidentActionResult[]>([]);
   const [actionResults, setActionResults] = useState<Record<string, string>>({});
+  const [pendingSim, setPendingSim] = useState<SimulationDetail | null>(null);
+
+  useEffect(() => {
+    const sim = getSimulation();
+    if (sim) setPendingSim(sim);
+  }, []);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,18 +69,67 @@ export default function ThreatFeed() {
         .map((action) => incidentKey(action.incident_title, action.affected_user)),
     );
   }, [incidentActions]);
-  const threats = backendThreats
-    .map((item, index) => ({
-      ...item,
-      id: item.id ?? `${item.type}-${index}`,
-      actionResult: actionResults[item.id ?? `${item.type}-${index}`],
-    }))
-    .filter((item) => item.title.trim().length > 0)
-    .filter((item) => !resolvedKeys.has(incidentKey(item.title, item.affectedUser)));
+  const threats = useMemo(() => {
+    const items = backendThreats
+      .map((item, index) => ({
+        ...item,
+        id: item.id ?? `${item.type}-${index}`,
+        actionResult: actionResults[item.id ?? `${item.type}-${index}`],
+      }))
+      .filter((item) => item.title.trim().length > 0)
+      .filter((item) => !resolvedKeys.has(incidentKey(item.title, item.affectedUser)));
+
+    if (!pendingSim) return items;
+
+    // Check if the simulation result already appears in the audit log
+    const matchIdx = items.findIndex((item) => item.affectedUser === pendingSim.user);
+
+    if (matchIdx >= 0) {
+      // Enrich the matching audit entry with full simulation detail
+      return items.map((item, index) =>
+        index === matchIdx ? { ...item, simulationDetail: pendingSim } : item,
+      );
+    }
+
+    // Audit log hasn't caught up yet — prepend a virtual item immediately
+    const sev = pendingSim.riskScore >= 0.8 ? "CRITICAL" : pendingSim.riskScore >= 0.6 ? "HIGH" : "MEDIUM";
+    const virtualItem: ThreatFeedItemData = {
+      id: `sim-${pendingSim.matchKey}`,
+      severity: sev,
+      severityColor: sev === "CRITICAL" ? "var(--alert-red)" : sev === "HIGH" ? "var(--alert-orange)" : "var(--alert-yellow)",
+      badgeBg: sev === "CRITICAL" ? criticalBg : sev === "HIGH" ? highBg : mediumBg,
+      type: pendingSim.action.replaceAll("_", " "),
+      typeColor: "var(--glow-violet)",
+      time: "just now",
+      title: pendingSim.reasoning,
+      meta: [
+        `User: ${pendingSim.user}`,
+        `Role: ${pendingSim.role}`,
+        `Resource: ${pendingSim.resource}`,
+        `Risk: ${Math.round(pendingSim.riskScore * 100)}%`,
+      ],
+      confidence: Math.round(pendingSim.riskScore * 100),
+      affectedUser: pendingSim.user,
+      department: pendingSim.department,
+      resource: pendingSim.resource,
+      aiRecommendation: pendingSim.aiRecommendation,
+      finalDecision: pendingSim.finalDecision,
+      decisionSource: pendingSim.decisionSource as "model" | "policy" | "human",
+      policyRuleMatched: pendingSim.policyRuleMatched,
+      policyVersion: pendingSim.policyVersion,
+      simulationDetail: pendingSim,
+    };
+
+    return [virtualItem, ...items];
+  }, [backendThreats, resolvedKeys, actionResults, pendingSim]);
 
   async function handleThreatAction(item: ThreatFeedItemData, action: string) {
     if (!item.affectedUser || !item.department || !item.resource) {
       return;
+    }
+    if (item.simulationDetail) {
+      clearSimulation();
+      setPendingSim(null);
     }
 
     const payload: IncidentActionInput = {

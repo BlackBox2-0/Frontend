@@ -253,3 +253,20 @@ input {
     opacity: 0;
   }
 }
+
+@keyframes bb-pipeline-flow {
+  0% {
+    left: -6px;
+    opacity: 0;
+  }
+  8% {
+    opacity: 1;
+  }
+  92% {
+    opacity: 1;
+  }
+  100% {
+    left: calc(100% + 6px);
+    opacity: 0;
+  }
+}
