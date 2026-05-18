@@ -1057,103 +1057,141 @@ export default function NeuralMesh({ agents = [] }) {
         {selectedLiveNode && selectedMetrics ? (
           <motion.aside
             key={selectedLiveNode.id}
-            initial={{ width: 0, opacity: 0 }}
-            animate={{ width: 280, opacity: 1 }}
-            exit={{ width: 0, opacity: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="flex h-[540px] shrink-0 flex-col overflow-hidden rounded-2xl border border-[rgba(123,47,255,0.2)] bg-[rgba(13,11,26,0.97)] shadow-[-18px_0_32px_rgba(2,1,8,0.22)] backdrop-blur-md"
+            initial={{ x: 20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            exit={{ x: 20, opacity: 0 }}
+            transition={{ duration: 0.22, ease: "easeOut" }}
+            className="flex h-[540px] w-[260px] shrink-0 flex-col overflow-hidden rounded-2xl border bg-[rgba(9,7,20,0.98)] backdrop-blur-md"
+            style={{ borderColor: `${selectedLiveNode.color}28` }}
           >
-            {/* Scrollable content area */}
-            <div className="relative min-h-0 flex-1 overflow-y-auto p-5 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10">
-              <button
-                type="button"
-                aria-label="Close agent details"
-                onClick={() => setSelectedNode(null)}
-                className="absolute right-4 top-4 flex size-8 items-center justify-center rounded-md border border-white/10 text-slate-400 transition hover:border-white/25 hover:text-white"
-              >
-                X
-              </button>
-
-              <header className="pr-8">
-                <div className="flex items-center gap-3">
+            {/* Header */}
+            <div
+              className="shrink-0 px-5 pt-5 pb-4 border-b"
+              style={{ borderColor: `${selectedLiveNode.color}18` }}
+            >
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center gap-3 min-w-0">
                   <span
-                    className="size-4 rounded-full shadow-[0_0_16px_currentColor]"
-                    style={{ background: selectedLiveNode.color, color: selectedLiveNode.color }}
+                    className="size-3.5 shrink-0 rounded-full"
+                    style={{
+                      background: selectedLiveNode.color,
+                      boxShadow: `0 0 12px ${selectedLiveNode.color}`,
+                    }}
                   />
-                  <h2 className="font-heading text-[20px] font-bold text-white">{selectedLiveNode.id}</h2>
+                  <div className="min-w-0">
+                    <h2 className="font-heading text-[18px] font-bold leading-tight text-white">
+                      {selectedLiveNode.id}
+                    </h2>
+                    <p className="mt-0.5 font-body text-[11px] truncate" style={{ color: selectedLiveNode.color }}>
+                      {selectedLiveNode.role}
+                    </p>
+                  </div>
                 </div>
-                <p className="mt-1 font-body text-[13px]" style={{ color: selectedLiveNode.color }}>
-                  {selectedLiveNode.role}
-                </p>
+                <button
+                  type="button"
+                  aria-label="Close"
+                  onClick={() => setSelectedNode(null)}
+                  className="mt-0.5 shrink-0 flex size-6 items-center justify-center rounded text-slate-500 transition hover:text-slate-200"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Compact stats row */}
+              <div className="mt-4 flex items-center gap-3 font-mono text-[10px]">
                 <motion.span
-                  animate={{ opacity: [0.55, 1, 0.55] }}
+                  animate={{ opacity: [0.6, 1, 0.6] }}
                   transition={{ duration: 1.8, repeat: Infinity }}
-                  className="mt-3 inline-flex rounded border px-2 py-1 font-mono text-[9px] font-bold"
-                  style={{ borderColor: `${selectedLiveNode.color}40`, color: selectedLiveNode.color }}
+                  className="rounded px-2 py-0.5 font-bold"
+                  style={{
+                    color: selectedLiveNode.color,
+                    background: `${selectedLiveNode.color}18`,
+                    border: `1px solid ${selectedLiveNode.color}30`,
+                  }}
                 >
                   {selectedLiveNode.status.toUpperCase()}
                 </motion.span>
-              </header>
-
-              <div className="mt-6 grid grid-cols-2 gap-3">
-                {[
-                  ["Tasks Today", selectedMetrics.tasks],
-                  ["Accuracy", selectedMetrics.accuracy],
-                  ["Uptime", selectedMetrics.uptime],
-                  ["Response Time", selectedMetrics.response],
-                ].map(([label, value]) => (
-                  <div key={label} className="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-                    <div className="font-heading text-[22px] font-bold text-white">{value}</div>
-                    <div className="font-body text-[9px] uppercase text-slate-400">{label}</div>
-                  </div>
-                ))}
+                <span className="text-slate-400">ACC {selectedMetrics.accuracy}</span>
+                <span className="text-slate-500">{selectedMetrics.response}</span>
               </div>
 
-              <section className="mt-6">
-                <div className="font-body text-[9px] uppercase text-slate-500">Current Task</div>
-                <p className="mt-2 font-mono text-[12px] leading-5 text-slate-300">{selectedLiveNode.task}</p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white/10">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${selectedMetrics.progress}%` }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                    className="h-full rounded-full"
-                    style={{ background: selectedLiveNode.color, boxShadow: `0 0 14px ${selectedLiveNode.color}` }}
-                  />
-                </div>
-              </section>
-
-              <section className="mt-6">
-                <div className="font-body text-[9px] uppercase text-slate-500">Connected To</div>
-                <div className="mt-3 flex flex-col gap-2">
-                  {selectedConnections.map((agent) => (
-                    <div key={agent.id} className="flex items-center gap-2 font-mono text-[11px] text-slate-300">
-                      <span className="size-2 rounded-full" style={{ background: agent.color }} />
-                      {agent.id}
-                    </div>
-                  ))}
-                </div>
-              </section>
+              {/* Progress bar */}
+              <div className="mt-3 h-1 overflow-hidden rounded-full bg-white/[0.06]">
+                <motion.div
+                  initial={{ width: 0 }}
+                  animate={{ width: `${selectedMetrics.progress}%` }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="h-full rounded-full"
+                  style={{ background: selectedLiveNode.color, boxShadow: `0 0 8px ${selectedLiveNode.color}` }}
+                />
+              </div>
+              <p className="mt-2 font-mono text-[10px] leading-4 text-slate-500 line-clamp-2">
+                {selectedLiveNode.task}
+              </p>
             </div>
 
-            {/* Buttons always pinned at bottom, never overlapping */}
-            <div className="shrink-0 border-t border-white/[0.06] p-4 flex flex-col gap-2">
-              {["View Full Logs", "Assign New Task", "Pause Agent"].map((label) => (
-                <button
-                  key={label}
-                  type="button"
-                  className="rounded-md border border-white/10 px-3 py-2 text-left font-body text-[12px] text-slate-300 transition hover:bg-white/[0.04]"
-                  onMouseEnter={(event) => {
-                    event.currentTarget.style.borderColor = `${selectedLiveNode.color}70`;
-                    event.currentTarget.style.color = selectedLiveNode.color;
-                  }}
-                  onMouseLeave={(event) => {
-                    event.currentTarget.style.borderColor = "rgba(255,255,255,0.1)";
-                    event.currentTarget.style.color = "#CBD5E1";
-                  }}
-                >
-                  {label}
-                </button>
+            {/* Connections list */}
+            <div className="min-h-0 flex-1 overflow-y-auto px-5 py-4">
+              <p className="mb-3 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-500">
+                Connections by agent · {selectedConnections.length}
+              </p>
+              <div className="flex flex-col gap-1.5">
+                {selectedConnections.map((agent, i) => {
+                  const sendsTo = edges.some(
+                    (e) => e.from === selectedLiveNode.id && e.to === agent.id,
+                  );
+                  const receivesFrom = edges.some(
+                    (e) => e.from === agent.id && e.to === selectedLiveNode.id,
+                  );
+                  const direction = sendsTo && receivesFrom ? "↔" : sendsTo ? "→" : "←";
+
+                  return (
+                    <motion.div
+                      key={agent.id}
+                      initial={{ opacity: 0, x: 8 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: i * 0.05 }}
+                      className="flex items-center gap-3 rounded-lg px-3 py-2.5 border border-white/[0.04] bg-white/[0.02] hover:bg-white/[0.04] transition-colors"
+                    >
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{
+                          background: agent.color,
+                          boxShadow: `0 0 6px ${agent.color}`,
+                        }}
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="font-mono text-[11px] font-semibold text-white">{agent.id}</p>
+                        <p className="font-body text-[9px] truncate" style={{ color: agent.color }}>
+                          {agent.role}
+                        </p>
+                      </div>
+                      <span className="shrink-0 font-mono text-[13px] text-slate-400">
+                        {direction}
+                      </span>
+                    </motion.div>
+                  );
+                })}
+
+                {selectedConnections.length === 0 && (
+                  <p className="font-mono text-[10px] text-slate-600 italic">No active connections</p>
+                )}
+              </div>
+            </div>
+
+            {/* Footer stats */}
+            <div
+              className="shrink-0 border-t px-5 py-3 grid grid-cols-2 gap-2"
+              style={{ borderColor: `${selectedLiveNode.color}18` }}
+            >
+              {[
+                ["Tasks today", selectedMetrics.tasks],
+                ["Uptime", selectedMetrics.uptime],
+              ].map(([label, value]) => (
+                <div key={label} className="rounded-lg bg-white/[0.03] border border-white/[0.05] p-2.5">
+                  <div className="font-heading text-[16px] font-bold text-white">{value}</div>
+                  <div className="font-body text-[9px] uppercase text-slate-500">{label}</div>
+                </div>
               ))}
             </div>
           </motion.aside>
